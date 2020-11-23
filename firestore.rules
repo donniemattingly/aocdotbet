@@ -5,6 +5,9 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth.uid == userId;
     }
+    match /groups/{groupId} {
+      allow read: if request.auth != null && exists(/databases/$(database)/documents/groups/$(groupId)/users/$(request.auth.uid));
+    }
     match /{document=**} {
       allow read, write: if false;
     }

@@ -16,6 +16,7 @@ const Heading = styled.span`
 const NavContainer = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   margin-left: 0;
   width: 100%;
 `
