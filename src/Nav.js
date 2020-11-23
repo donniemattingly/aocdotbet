@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import React from "react";
 import {Link} from "react-router-dom";
+import {useStoreActions, useStoreState} from "easy-peasy";
+import {AocButton} from "./shared-components";
 
 const Heading = styled.span`
     display: inline-block;
@@ -41,10 +43,13 @@ const NavItem = styled(Link)`
 
 export const Nav = ({...props}) => {
     const links = [
-        ['login', 'Log In'],
         ['me', 'Me'],
         ['groups', 'Groups']
     ]
+
+    const loggedIn = useStoreState(state => state.loggedIn);
+    const signOut = useStoreActions(actions => actions.signOut)
+
     return (
         <NavContainer>
             <NavItem to={'/'}>
@@ -54,6 +59,7 @@ export const Nav = ({...props}) => {
             </NavItem>
             <NavItemsContainer>
                 {links.map(([to, title]) => <NavItem key={to} to={to}>[{title}]</NavItem>)}
+                {loggedIn ? <AocButton onClick={signOut}> [Log Out] </AocButton> : <NavItem key={'login'} to={'login'}>[Log In]</NavItem>}
             </NavItemsContainer>
         </NavContainer>
     )
