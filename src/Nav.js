@@ -15,6 +15,7 @@ const NavContainer = styled.div`
   display: flex;
   flex-direction: row;
   margin-left: 0;
+  width: 100%;
 `
 
 const NavItemsContainer = styled.div`
@@ -52,7 +53,7 @@ export const Nav = ({...props}) => {
                 </Heading>
             </NavItem>
             <NavItemsContainer>
-                {links.map(([to, title]) => <NavItem to={to}>[{title}]</NavItem>)}
+                {links.map(([to, title]) => <NavItem key={to} to={to}>[{title}]</NavItem>)}
             </NavItemsContainer>
         </NavContainer>
     )
