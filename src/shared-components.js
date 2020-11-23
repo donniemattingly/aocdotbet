@@ -1,4 +1,5 @@
 import styled, {css} from "styled-components";
+import {Link} from "react-router-dom";
 
 
 export const headerTextStyle = css`
@@ -9,18 +10,23 @@ export const headerTextStyle = css`
     text-shadow: 0 0 2px #00cc00, 0 0 2px #00cc00;
 `
 
-export const AocButton = styled.a`
-    text-decoration: none;
+export const AocLinkStyles = css`
     color: #009900;
-    
-    font-size: 1.3em;
-    
     display: inline-block;
     outline: none;
+    text-decoration: none;
     
-    padding: .6em;
     
     &:hover, &:focus {
     color: #99ff99;
   }
+`
+
+export const AocLink = styled(Link)`
+  ${AocLinkStyles}
+`
+
+export const AocButton = styled.button`
+    ${AocLinkStyles};
+    font-size: 1em;
 `

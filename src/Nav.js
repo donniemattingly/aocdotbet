@@ -2,14 +2,14 @@ import styled from "styled-components";
 import React from "react";
 import {Link} from "react-router-dom";
 import {useStoreActions, useStoreState} from "easy-peasy";
-import {AocButton} from "./shared-components";
+import {AocButton, AocLink, AocLinkStyles} from "./shared-components";
 
 const Heading = styled.span`
     display: inline-block;
     text-decoration: none;
     color: #00cc00;
     text-shadow: 0 0 2px #00cc00, 0 0 2px #00cc00;
-    
+    padding: 0.6em;
     font-weight: normal;
 `
 
@@ -26,21 +26,26 @@ const NavItemsContainer = styled.div`
   flex-direction: row;
 `
 
-const NavItem = styled(Link)`
-    text-decoration: none;
-    color: #009900;
-    
-    font-size: 1.3em;
-    
-    display: inline-block;
-    outline: none;
-    
+export const NavItemContainer = styled.span`
     padding: .6em;
-    
-    &:hover, &:focus {
-    color: #99ff99;
-  }
 `
+
+const NavItem = ({to, title, onClick}) => {
+    console.log(onClick);
+    if (onClick) {
+        return (
+            <NavItemContainer>
+                <AocButton onClick={onClick}> [{title}] </AocButton>
+            </NavItemContainer>
+        )
+    } else {
+        return (
+            <NavItemContainer>
+                <AocLink key={to} to={to}>[{title}]</AocLink>
+            </NavItemContainer>
+        )
+    }
+}
 
 export const Nav = ({...props}) => {
     const links = [
@@ -49,18 +54,18 @@ export const Nav = ({...props}) => {
     ]
 
     const loggedIn = useStoreState(state => state.loggedIn);
-    const signOut = useStoreActions(actions => actions.signOut)
+    const signOut = useStoreActions(actions => actions.signOut);
 
     return (
         <NavContainer>
-            <NavItem to={'/'}>
+            <Link to={'/'}>
                 <Heading>
                     aoc.bet
                 </Heading>
-            </NavItem>
+            </Link>
             <NavItemsContainer>
-                {links.map(([to, title]) => <NavItem key={to} to={to}>[{title}]</NavItem>)}
-                {loggedIn ? <AocButton onClick={signOut}> [Log Out] </AocButton> : <NavItem key={'login'} to={'login'}>[Log In]</NavItem>}
+                {links.map(([to, title]) => <NavItem key={to} to={to} title={title}/>)}
+                <NavItem onClick={loggedIn ? signOut : undefined} to={loggedIn ? undefined : 'login'} title={`Log ${loggedIn ? 'Out' : 'In'}`}/>
             </NavItemsContainer>
         </NavContainer>
     )

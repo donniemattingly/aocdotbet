@@ -7,6 +7,7 @@ import {Nav} from "./Nav";
 import './firebaseConfig';
 import {Groups} from "./Groups";
 import {useFirebaseAuth} from "./hooks";
+import {CreateGroup} from "./CreateGroup";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -30,8 +31,11 @@ function App() {
                             <Route path='/login'>
                                 <Login/>
                             </Route>
-                            <Route path='/groups'>
+                            <Route exact path='/groups'>
                                 <Groups/>
+                            </Route>
+                            <Route path='/groups/create'>
+                                <CreateGroup/>
                             </Route>
                         </Switch>
                     </Content>
