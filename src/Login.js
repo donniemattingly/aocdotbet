@@ -33,11 +33,6 @@ export const Login = ({...props}) => {
 
     return (
         <LoginContainer>
-            <h1> aoc.bet </h1>
-            <p>
-                Wager with friends on advent of code!
-            </p>
-
             <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()}/>
         </LoginContainer>
     )
