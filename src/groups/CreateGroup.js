@@ -76,12 +76,11 @@ export const CreateGroup = ({...props}) => {
                     <div>
                         <p>
                             You must first create a private leaderboard.
-                            Once created, enter the ID of the leaderboard below.
-                            (this is the first section of the join code)
+                            Once created, enter the join code for the leaderboard below.
                         </p>
                     </div>
-                    <AocInput name="groupId" defaultValue="" ref={register({required: true})}/>
-                    {errors.groupId &&
+                    <AocInput name="joinCode" defaultValue="" ref={register({required: true})}/>
+                    {errors.joinCode &&
                     <ErrorMessage>Your group ID is required to update scores and confirm membership </ErrorMessage>}
 
                     <p>

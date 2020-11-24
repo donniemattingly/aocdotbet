@@ -55,7 +55,7 @@ export const JoinGroup = ({...props}) => {
         setCreateGroupError(null);
         setCreateGroupSuccess(null);
         try {
-            const leaderboard = await firebase.functions().httpsCallable('createGroup')({uid: userId, ...data})
+            const leaderboard = await firebase.functions().httpsCallable('joinGroup')({uid: userId, ...data})
             setCreateGroupSuccess(true);
         } catch (error) {
             setCreateGroupError(error.message);
@@ -92,14 +92,8 @@ export const JoinGroup = ({...props}) => {
                     <br/>
                     {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
-                    {createGroupSuccess && <span>Your Group was created!</span>}
+                    {createGroupSuccess && <span>You joined the group! <AocLink to={'/groups'}>[View your groups]</AocLink></span>}
 
-                    <p>
-                        If you have no idea what these are, you're likely in the wrong place.
-                        <AocLink to={'/'}>
-                            [Go Home]
-                        </AocLink>
-                    </p>
                 </CreateGroupFormContainer>
             </div>
         )
