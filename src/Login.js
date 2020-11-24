@@ -18,7 +18,7 @@ const FirebaseAuthContainer = styled.div`
 
 export const Login = ({...props}) => {
     const uiConfig = {
-        signInFlow: 'popup',
+        signInFlow: 'redirect',
         signInSuccessUrl: '/',
         signInOptions: [
             firebase.auth.GoogleAuthProvider.PROVIDER_ID,

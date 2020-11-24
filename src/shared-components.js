@@ -28,6 +28,15 @@ export const AocLink = styled(Link)`
 
 export const AocButton = styled.button`
     ${AocLinkStyles};
-    appearance: none;
-    font-size: 1em;
+    background: transparent;
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    margin: 0;
+    padding: 0;
+    color: #009900;
+    cursor: pointer;
+    width: 20em;
+    justify-content: start;
+    text-align: start;
 `

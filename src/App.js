@@ -9,6 +9,7 @@ import {Groups} from "./Groups";
 import {useFirebaseAuth} from "./hooks";
 import {CreateGroup} from "./CreateGroup";
 import {Group} from "./Group";
+import {Me} from "./Me";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -41,6 +42,9 @@ function App() {
                             </Route>
                             <Route exact path='/groups/:groupId'>
                                 <Group/>
+                            </Route>
+                            <Route exact path='/me'>
+                                <Me/>
                             </Route>
                         </Switch>
                     </Content>
