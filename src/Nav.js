@@ -31,7 +31,6 @@ export const NavItemContainer = styled.span`
 `
 
 const NavItem = ({to, title, onClick}) => {
-    console.log(onClick);
     if (onClick) {
         return (
             <NavItemContainer>
@@ -49,8 +48,8 @@ const NavItem = ({to, title, onClick}) => {
 
 export const Nav = ({...props}) => {
     const links = [
-        ['me', 'Me'],
-        ['groups', 'Groups']
+        ['/me', 'Me'],
+        ['/groups', 'Groups']
     ]
 
     const loggedIn = useStoreState(state => state.loggedIn);
@@ -65,7 +64,7 @@ export const Nav = ({...props}) => {
             </Link>
             <NavItemsContainer>
                 {links.map(([to, title]) => <NavItem key={to} to={to} title={title}/>)}
-                <NavItem onClick={loggedIn ? signOut : undefined} to={loggedIn ? undefined : 'login'} title={`Log ${loggedIn ? 'Out' : 'In'}`}/>
+                <NavItem onClick={loggedIn ? signOut : undefined} to={loggedIn ? undefined : '/login'} title={`Log ${loggedIn ? 'Out' : 'In'}`}/>
             </NavItemsContainer>
         </NavContainer>
     )

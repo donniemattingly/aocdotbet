@@ -8,9 +8,11 @@ import './firebaseConfig';
 import {Groups} from "./Groups";
 import {useFirebaseAuth} from "./hooks";
 import {CreateGroup} from "./CreateGroup";
+import {Group} from "./Group";
 
 const AppContainer = styled.div`
   width: 100%;
+  max-width: 70em;
 `
 
 const Content = styled.div`
@@ -36,6 +38,9 @@ function App() {
                             </Route>
                             <Route path='/groups/create'>
                                 <CreateGroup/>
+                            </Route>
+                            <Route exact path='/groups/:groupId'>
+                                <Group/>
                             </Route>
                         </Switch>
                     </Content>

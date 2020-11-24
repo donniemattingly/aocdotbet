@@ -27,8 +27,8 @@ export const store = createStore({
         if (doc.exists) {
             const user = doc.data();
             actions.setUser(user);
+            return user;
         }
-        await actions.loadGroupsForUser();
     }),
     loadGroupsForUser: thunk(async (actions, id) => {
         const doc = await firebase.firestore().collection('groups').doc('1').get();
@@ -39,8 +39,25 @@ export const store = createStore({
         // console.log(groups);
         // actions.addGroupsToUser(groups);
     }),
+    signIn: thunk(async (actions, firebaseUser) => {
+        console.log('signing in');
+        actions.setAuth(firebaseUser);
+        const user = await actions.loadUser(firebaseUser.uid);
+        if(!user){
+            await actions.saveUser(firebaseUser);
+        }
+    }),
+    saveUser: thunk(async (actions, firebaseUser) => {
+        const user = {
+            name: firebaseUser.displayName,
+            groups: []
+        }
+        await firebase.firestore().collection('users').doc(firebaseUser.uid).set(user);
+        actions.setUser(user);
+    }),
+    wipeStore: action(state => ({auth: {loggedIn: false}})),
     signOut: thunk(async (actions, payload) => {
         await firebase.auth().signOut();
-        actions.setAuth(null);
+        actions.wipeStore();
     })
 });

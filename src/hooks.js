@@ -4,14 +4,12 @@ import {useStoreActions} from "easy-peasy";
 
 
 export const useFirebaseAuth = () => {
-    const setAuth = useStoreActions(actions => actions.setAuth);
-    const loadUser = useStoreActions(actions => actions.loadUser);
+    const signIn = useStoreActions(actions => actions.signIn);
 
     useEffect(() => {
         const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                setAuth(user);
-                loadUser(user.uid);
+                signIn(user).catch();
             }
         });
         return () => unsubscribe();

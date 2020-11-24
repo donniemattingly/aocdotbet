@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import {AocLink} from "./shared-components";
 import firebase from "firebase";
 import {UnicodeSpinner} from "./UnicodeSpinner";
+import {useStoreState} from "easy-peasy";
 
 const CreateGroupFormContainer = styled.form`
   display: flex;
@@ -45,42 +46,65 @@ export const CreateGroup = ({...props}) => {
     const [submitting, setSubmiting] = useState();
     const {register, handleSubmit, errors} = useForm();
     const [createGroupError, setCreateGroupError] = useState(null);
+    const [createGroupSuccess, setCreateGroupSuccess] = useState(null);
+    const loggedIn = useStoreState(state => state.loggedIn);
+    const userId = useStoreState(state => state.auth.id);
+
     const onSubmit = async data => {
         setSubmiting(true);
         setCreateGroupError(null);
+        setCreateGroupSuccess(null);
         try {
-            await firebase.functions().httpsCallable('createGroup')(data)
-        } catch (error){
+            const leaderboard = await firebase.functions().httpsCallable('createGroup')({uid: userId, ...data})
+            setCreateGroupSuccess(true);
+        } catch (error) {
             setCreateGroupError(error.message);
         }
         setSubmiting(false);
     }
 
-    return (
-        <div>
-            <CreateGroupFormContainer onSubmit={handleSubmit(onSubmit)}>
-
-                <div>
-                    <p>
-                        You must first create a private leaderboard.
-                        Once created, enter the ID of the leaderboard below.
-                        (this is the first section of the join code)
-                    </p>
-                </div>
-                <AocInput name="groupId" defaultValue="" ref={register({required: true})}/>
-                {errors.groupId && <ErrorMessage>Your group ID is required to update scores and confirm membership </ErrorMessage>}
-
-                <p> As the group owner, we'll use your session token to fetch group results. Enter it below.</p>
-
-                <AocInput name="sessionId" ref={register({required: true})}/>
-
-                {errors.sessionId && <ErrorMessage>Your session token is required to fetch data</ErrorMessage>}
-                <br/>
-                {!submitting && <AocSubmit value='[Submit]'/>}
-                {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
-                {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
-                <p>If you have no idea what these are, you're likely in the wrong place. <AocLink to={'/'}> [Go Home] </AocLink></p>
-            </CreateGroupFormContainer>
+    if (!loggedIn) {
+        return <div>
+            <p> You must log in to create a group</p>
         </div>
-    )
+    } else {
+
+        return (
+            <div>
+                <CreateGroupFormContainer onSubmit={handleSubmit(onSubmit)}>
+
+                    <div>
+                        <p>
+                            You must first create a private leaderboard.
+                            Once created, enter the ID of the leaderboard below.
+                            (this is the first section of the join code)
+                        </p>
+                    </div>
+                    <AocInput name="groupId" defaultValue="" ref={register({required: true})}/>
+                    {errors.groupId &&
+                    <ErrorMessage>Your group ID is required to update scores and confirm membership </ErrorMessage>}
+
+                    <p>
+                        As the group owner, we'll use your session token to fetch group results. Enter it below.
+                    </p>
+
+                    <AocInput name="session" ref={register({required: true})}/>
+
+                    {errors.sessionId && <ErrorMessage>Your session token is required to fetch data</ErrorMessage>}
+                    <br/>
+                    {!submitting && <AocSubmit value='[Submit]'/>}
+                    {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
+                    {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
+                    {createGroupSuccess && <span>Your Group was created!</span>}
+
+                    <p>
+                        If you have no idea what these are, you're likely in the wrong place.
+                        <AocLink to={'/'}>
+                            [Go Home]
+                        </AocLink>
+                    </p>
+                </CreateGroupFormContainer>
+            </div>
+        )
+    }
 }

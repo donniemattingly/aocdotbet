@@ -28,5 +28,6 @@ export const AocLink = styled(Link)`
 
 export const AocButton = styled.button`
     ${AocLinkStyles};
+    appearance: none;
     font-size: 1em;
 `
