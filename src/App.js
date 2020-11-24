@@ -41,7 +41,10 @@ function App() {
                             <Route path='/groups/create'>
                                 <CreateGroup/>
                             </Route>
-                            <Route path='/groups/join'>
+                            <Route exact path='/groups/join'>
+                                <JoinGroup/>
+                            </Route>
+                            <Route path='/groups/join/:joinCode'>
                                 <JoinGroup/>
                             </Route>
                             <Route exact path='/groups/:groupId'>

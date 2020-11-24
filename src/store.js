@@ -1,7 +1,12 @@
-import {action, computed, createStore, thunk} from "easy-peasy";
+import {action, computed, createStore, thunk, debug, persist} from "easy-peasy";
 import firebase from "firebase";
 
-export const store = createStore({
+export const store = createStore(persist({
+    joinCode: null,
+    setJoinCode: action((state, joinCode) => {
+        console.log(joinCode);
+        state.joinCode = joinCode;
+    }),
     auth: {loggedIn: false},
     loggedIn: computed(state => state.auth?.loggedIn ?? false),
     setAuth: action((state, firebaseUser) => {
@@ -32,18 +37,15 @@ export const store = createStore({
     }),
     loadGroupsForUser: thunk(async (actions, id) => {
         const doc = await firebase.firestore().collection('groups').doc('1').get();
-        if(doc.exists){
+        if (doc.exists) {
             console.log(doc.data());
         }
-        // const groups = snapshot.map(doc => doc.data())
-        // console.log(groups);
-        // actions.addGroupsToUser(groups);
     }),
     signIn: thunk(async (actions, firebaseUser) => {
         console.log('signing in');
         actions.setAuth(firebaseUser);
         const user = await actions.loadUser(firebaseUser.uid);
-        if(!user){
+        if (!user) {
             await actions.saveUser(firebaseUser);
         }
     }),
@@ -55,9 +57,13 @@ export const store = createStore({
         await firebase.firestore().collection('users').doc(firebaseUser.uid).set(user);
         actions.setUser(user);
     }),
-    wipeStore: action(state => ({auth: {loggedIn: false}})),
+    wipeStore: action(state => {
+        console.log('wiping state');
+        console.log(debug(state));
+        return {joinCode: state.joinCode, auth: {loggedIn: false}}
+    }),
     signOut: thunk(async (actions, payload) => {
         await firebase.auth().signOut();
         actions.wipeStore();
     })
-});
+}));

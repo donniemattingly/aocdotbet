@@ -1,10 +1,11 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import styled from 'styled-components';
 import {AocAnchor, AocLink, AocRadio, Smaller} from "../shared-components";
 import firebase from "firebase";
 import {UnicodeSpinner} from "../UnicodeSpinner";
-import {useStoreState} from "easy-peasy";
+import {useStoreActions, useStoreState} from "easy-peasy";
+import {useParams} from "react-router-dom"
 
 const CreateGroupFormContainer = styled.form`
   display: flex;
@@ -48,9 +49,18 @@ export const JoinGroup = ({...props}) => {
     const [createGroupError, setCreateGroupError] = useState(null);
     const [createGroupSuccess, setCreateGroupSuccess] = useState(null);
     const [allowDerivatives, setAllowDerivatives] = useState(true);
-
+    const urlJoinCode = useParams()['joinCode'];
+    const savedJoinCode = useStoreState(state => state.joinCode);
+    const setJoinCode = useStoreActions(actions => actions.setJoinCode);
     const loggedIn = useStoreState(state => state.loggedIn);
     const userId = useStoreState(state => state.auth.id);
+    const joinCode = urlJoinCode || savedJoinCode || "";
+
+    useEffect(() =>{
+        if(urlJoinCode){
+            setJoinCode(urlJoinCode);
+        }
+    }, [urlJoinCode])
 
     const onSubmit = async data => {
         setSubmiting(true);
@@ -69,7 +79,7 @@ export const JoinGroup = ({...props}) => {
 
     if (!loggedIn) {
         return <div>
-            <p> You must log in to join a group</p>
+            <p> You must <AocLink to={'/login'}>[log in]</AocLink> to join a group</p>
         </div>
     } else {
 
@@ -89,7 +99,7 @@ export const JoinGroup = ({...props}) => {
                         </p>
                     </div>
                     <span>
-                        <AocInput name="joinCode" defaultValue="" ref={register({required: true})}/>
+                        <AocInput name="joinCode" defaultValue={joinCode} ref={register({required: true})}/>
                         {' '}
                         {(!submitting && !createGroupSuccess) && <AocSubmit value='[Submit]'/>}
                         {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
