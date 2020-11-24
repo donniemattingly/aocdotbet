@@ -62,14 +62,14 @@ const createGroupInFirestore = async (adminUid, joinCode, session, leaderboard) 
     return leaderboardId;
 }
 
-const addUserToGroup = async (groupId, uid) => {
+const addUserToGroup = async (groupId, uid, aocId) => {
     const group = await getGroup(groupId);
-    await group.ref.collection('members').doc(uid).set({joined: Date.now()})
+    await group.ref.collection('members').doc(uid).set({aocId, joined: Date.now()})
     const userRef = await db.collection('users').doc(uid).get()
     if(userRef.exists){
         const user = userRef.data();
-        const groups = user.groups;
-        await db.collection('users').doc(uid).set({...user, groups: [groupId, ...groups]})
+        const groups = Array.from(new Set([groupId, ...user.groups]))
+        await db.collection('users').doc(uid).set({...user, groups})
     }
 }
 
@@ -78,6 +78,8 @@ const updateLeaderboardForGroup = async (groupId) => {
     const group = groupSnapshot.data();
     const leaderboard = await getLeaderboard(group.joinCode, group.sessionToken);
     await groupSnapshot.ref.update({leaderboard: leaderboard});
+
+    return leaderboard;
 }
 
 const getSnapshotOrThrow = async (collection, doc) => {
@@ -92,29 +94,44 @@ const getSnapshotOrThrow = async (collection, doc) => {
 const isUserMemberOfLeaderboardForGroup = async (uid, groupId) => {
     const userSnapshot = await getSnapshotOrThrow('users', uid);
     const groupSnapshot = await getSnapshotOrThrow('groups', groupId);
-    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(uid).get();
 
     const user = userSnapshot.data();
     const group = groupSnapshot.data();
 
-    console.log(membersSnapshot.data())
-    if(membersSnapshot.exists){
-        throw new functions.https.HttpsError('already-exists', 'You\'re already in this group');
-    }
 
     return !!Object.values(group.leaderboard.members).find(l => l.name = user.name);
+}
+
+const getAocIdFromLeaderboard = (name, leaderboard) => {
+    const leaderboardEntry = Object.keys(leaderboard.members)
+        .map(k => ({aocId: k, ...leaderboard.members[k]}))
+        .find(l => l.name = name);
+    return leaderboardEntry.aocId;
 }
 
 exports.createGroup = functions.https.onCall(async (data, context) => {
     const leaderboard = await getLeaderboard(data.joinCode, data.session);
     const groupId = await createGroupInFirestore(data.uid, data.joinCode, data.session, leaderboard);
-    await addUserToGroup(groupId, data.uid)
+    const user = (await getSnapshotOrThrow('users', data.uid)).data()
+    const aocId = getAocIdFromLeaderboard(user.name, leaderboard);
+    await addUserToGroup(groupId, data.uid, aocId)
 });
 
 exports.joinGroup = functions.https.onCall(async (data, context) => {
     const groupId = data.joinCode.split('-')[0];
-    await updateLeaderboardForGroup(groupId)
+    const leaderboard = await updateLeaderboardForGroup(groupId)
+    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(data.uid).get();
+
+    if(membersSnapshot.exists){
+        throw new functions.https.HttpsError('already-exists', 'You\'re already in this group');
+    }
+
     if(await isUserMemberOfLeaderboardForGroup(data.uid, groupId)) {
-        await addUserToGroup(groupId, data.uid)
+        const user = (await getSnapshotOrThrow('users', data.uid)).data()
+        const aocId = getAocIdFromLeaderboard(user.name, leaderboard);
+        await addUserToGroup(groupId, data.uid, aocId)
+    } else {
+        throw new functions.https.HttpsError('failed-precondition',
+            'You\'re not a member of the leaderboard associated with this join code');
     }
 });
