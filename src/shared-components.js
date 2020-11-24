@@ -1,5 +1,6 @@
 import styled, {css} from "styled-components";
 import {Link} from "react-router-dom";
+import React, {useState} from "react";
 
 
 export const headerTextStyle = css`
@@ -15,7 +16,7 @@ export const AocLinkStyles = css`
     display: inline-block;
     outline: none;
     text-decoration: none;
-    
+    user-select: none;
     
     &:hover, &:focus {
     color: #99ff99;
@@ -44,3 +45,23 @@ export const AocButton = styled.button`
     justify-content: start;
     text-align: start;
 `
+
+const AocRadioSpan = styled.span`
+  cursor: pointer;
+  user-select: none;
+  font-size: inherit;
+  &:hover{
+    background-color: #19193b;
+  }
+`
+
+export const Smaller = styled.span`
+  font-size: .7em;
+  opacity: 0.5
+`
+
+export const AocRadio = ({label, onClick, value}) => {
+    return (
+        <AocRadioSpan onClick={onClick}> [{value ? 'X' : ' '}] {label}</AocRadioSpan>
+    )
+}

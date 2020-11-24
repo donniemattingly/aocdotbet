@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import styled from 'styled-components';
-import {AocAnchor, AocLink} from "../shared-components";
+import {AocAnchor, AocLink, AocRadio, Smaller} from "../shared-components";
 import firebase from "firebase";
 import {UnicodeSpinner} from "../UnicodeSpinner";
 import {useStoreState} from "easy-peasy";
@@ -47,6 +47,8 @@ export const JoinGroup = ({...props}) => {
     const {register, handleSubmit, errors} = useForm();
     const [createGroupError, setCreateGroupError] = useState(null);
     const [createGroupSuccess, setCreateGroupSuccess] = useState(null);
+    const [allowDerivatives, setAllowDerivatives] = useState(true);
+
     const loggedIn = useStoreState(state => state.loggedIn);
     const userId = useStoreState(state => state.auth.id);
 
@@ -55,7 +57,9 @@ export const JoinGroup = ({...props}) => {
         setCreateGroupError(null);
         setCreateGroupSuccess(null);
         try {
-            const leaderboard = await firebase.functions().httpsCallable('joinGroup')({uid: userId, ...data})
+            const leaderboard = await firebase.functions().httpsCallable('joinGroup')(
+                {uid: userId, allowDerivatives, ...data}
+                )
             setCreateGroupSuccess(true);
         } catch (error) {
             setCreateGroupError(error.message);
@@ -76,7 +80,8 @@ export const JoinGroup = ({...props}) => {
                     <div>
                         <p>
                             To join a group, you need to be a member of the private leaderboard for this group
-                            on <AocAnchor href="https://adventofcode.com/2020/leaderboard/private">Advent of Code</AocAnchor>
+                            on <AocAnchor href="https://adventofcode.com/2020/leaderboard/private">Advent of
+                            Code</AocAnchor>
                         </p>
 
                         <p>
@@ -85,15 +90,22 @@ export const JoinGroup = ({...props}) => {
                     </div>
                     <span>
                         <AocInput name="joinCode" defaultValue="" ref={register({required: true})}/>
-                        {!submitting && <AocSubmit value='[Submit]'/>}
+                        {' '}
+                        {(!submitting && !createGroupSuccess) && <AocSubmit value='[Submit]'/>}
+                        {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     </span>
                     {errors.joinCode &&
                     <ErrorMessage>You must enter the join code </ErrorMessage>}
                     <br/>
-                    {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
-                    {createGroupSuccess && <span>You joined the group! <AocLink to={'/groups'}>[View your groups]</AocLink></span>}
-
+                    {createGroupSuccess &&
+                    <span>You joined the group! <AocLink to={'/groups'}>[View your groups]</AocLink></span>}
+                    <Smaller>
+                        <AocRadio
+                        onClick={() => setAllowDerivatives(!allowDerivatives)}
+                        value={allowDerivatives}
+                        label='Allow others to make wagers about my results'/>
+                    </Smaller>
                 </CreateGroupFormContainer>
             </div>
         )

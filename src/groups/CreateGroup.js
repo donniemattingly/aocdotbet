@@ -91,7 +91,7 @@ export const CreateGroup = ({...props}) => {
 
                     {errors.sessionId && <ErrorMessage>Your session token is required to fetch data</ErrorMessage>}
                     <br/>
-                    {!submitting && <AocSubmit value='[Submit]'/>}
+                    {(!submitting && !createGroupSuccess) && <AocSubmit value='[Submit]'/>}
                     {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
                     {createGroupSuccess && <span>Your Group was created!</span>}

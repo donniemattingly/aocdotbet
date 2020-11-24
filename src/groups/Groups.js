@@ -8,7 +8,9 @@ export const Groups = ({...props}) => {
   return (
       <div>
           <p>--- Groups ---</p>
-          {user?.groups?.map(group => <AocLink key={group} to={`/groups/${group}`}> {group}</AocLink>)}
+          <ul>
+            {user?.groups?.map(group => <p><AocLink key={group} to={`/groups/${group}`}> {group}</AocLink></p>)}
+          </ul>
           <p>
               Not in a group?
               You can <AocLink to={'/groups/join'}> [Join One] </AocLink> or <AocLink to={'/groups/create'}> [Create One]</AocLink>

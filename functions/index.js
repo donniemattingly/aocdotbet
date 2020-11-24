@@ -8,14 +8,14 @@ const getLeaderboard = async (joinCode, session) => {
     const leaderboardId = joinCode.split('-')[0];
     const response = await axios.request({
         method: 'get',
-        url: `https://adventofcode.com/2020/leaderboard/private/view/${leaderboardId}.json`,
+        url: `https://adventofcode.com/2019/leaderboard/private/view/${leaderboardId}.json`,
         headers: {
             Cookie: `session=${session}`
         },
         validateStatus: null
     })
 
-    if(response.status > 300){
+    if (response.status > 300) {
         throw new functions.https.HttpsError('invalid-argument', 'Either the leaderboard or the session was invalid.')
     }
 
@@ -31,7 +31,7 @@ const getLeaderboard = async (joinCode, session) => {
 
 const getGroup = async (groupId) => {
     const doc = await db.collection('groups').doc(groupId).get();
-    if(!doc.exists){
+    if (!doc.exists) {
         throw new functions.https.HttpsError('not-found', `Group ${groupId} does not exist`)
     }
 
@@ -39,7 +39,7 @@ const getGroup = async (groupId) => {
 }
 
 const createGroupInFirestore = async (adminUid, joinCode, session, leaderboard) => {
-    if(!adminUid){
+    if (!adminUid) {
         throw new functions.https.HttpsError('invalid-argument', 'Must Supply user id in request')
     }
     const group = {
@@ -53,7 +53,7 @@ const createGroupInFirestore = async (adminUid, joinCode, session, leaderboard) 
 
     const doc = await db.collection('groups').doc(leaderboardId).get();
 
-    if(doc.exists){
+    if (doc.exists) {
         throw new functions.https.HttpsError('already-exists', 'A group already exists with this ID');
     } else {
         await db.collection('groups').doc(leaderboard.owner_id).set(group);
@@ -62,29 +62,45 @@ const createGroupInFirestore = async (adminUid, joinCode, session, leaderboard) 
     return leaderboardId;
 }
 
-const addUserToGroup = async (groupId, uid, aocId) => {
+const addUserToGroup = async (groupId, uid, aocId, allowDerivatives) => {
     const group = await getGroup(groupId);
-    await group.ref.collection('members').doc(uid).set({aocId, joined: Date.now()})
+    await group.ref.collection('members').doc(uid).set({uid, aocId, allowDerivatives, joined: Date.now()})
     const userRef = await db.collection('users').doc(uid).get()
-    if(userRef.exists){
+    if (userRef.exists) {
         const user = userRef.data();
         const groups = Array.from(new Set([groupId, ...user.groups]))
         await db.collection('users').doc(uid).set({...user, groups})
     }
+
+    await updateLeaderboardForGroup(groupId);
 }
 
 const updateLeaderboardForGroup = async (groupId) => {
     const groupSnapshot = await getGroup(groupId);
     const group = groupSnapshot.data();
     const leaderboard = await getLeaderboard(group.joinCode, group.sessionToken);
-    await groupSnapshot.ref.update({leaderboard: leaderboard});
+
+    const memberSnapshot = await db.collection('groups').doc(groupId).collection('members').get()
+    const members = memberSnapshot.docs.map(d => d.data()).reduce((acc, x) => ({...acc, [x.aocId]: x}), {})
+    const leaderboardMembersWithUid = Object.keys(leaderboard.members)
+        .reduce((acc, x) => (
+            {
+                ...acc,
+                [x]: {
+                    ...leaderboard.members[x],
+                    uid: members[x]?.uid ?? null,
+                    allowDerivatives: members[x]?.allowDerivatives ?? false
+                }
+            }
+        ), {})
+    await groupSnapshot.ref.update({leaderboard: {...leaderboard, members: leaderboardMembersWithUid}});
 
     return leaderboard;
 }
 
 const getSnapshotOrThrow = async (collection, doc) => {
     const snapshot = await db.collection(collection).doc(doc).get();
-    if(!snapshot.exists){
+    if (!snapshot.exists) {
         throw new functions.https.HttpsError('not-found', `The ${collection}: ${doc} was not found`)
     }
 
@@ -106,7 +122,7 @@ const getAocIdFromLeaderboard = (name, leaderboard) => {
     const leaderboardEntry = Object.keys(leaderboard.members)
         .map(k => ({aocId: k, ...leaderboard.members[k]}))
         .find(l => l.name = name);
-    return leaderboardEntry.aocId;
+    return leaderboardEntry?.aocId;
 }
 
 exports.createGroup = functions.https.onCall(async (data, context) => {
@@ -114,7 +130,7 @@ exports.createGroup = functions.https.onCall(async (data, context) => {
     const groupId = await createGroupInFirestore(data.uid, data.joinCode, data.session, leaderboard);
     const user = (await getSnapshotOrThrow('users', data.uid)).data()
     const aocId = getAocIdFromLeaderboard(user.name, leaderboard);
-    await addUserToGroup(groupId, data.uid, aocId)
+    await addUserToGroup(groupId, data.uid, aocId, true)
 });
 
 exports.joinGroup = functions.https.onCall(async (data, context) => {
@@ -122,14 +138,14 @@ exports.joinGroup = functions.https.onCall(async (data, context) => {
     const leaderboard = await updateLeaderboardForGroup(groupId)
     const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(data.uid).get();
 
-    if(membersSnapshot.exists){
+    if (membersSnapshot.exists) {
         throw new functions.https.HttpsError('already-exists', 'You\'re already in this group');
     }
 
-    if(await isUserMemberOfLeaderboardForGroup(data.uid, groupId)) {
+    if (await isUserMemberOfLeaderboardForGroup(data.uid, groupId)) {
         const user = (await getSnapshotOrThrow('users', data.uid)).data()
         const aocId = getAocIdFromLeaderboard(user.name, leaderboard);
-        await addUserToGroup(groupId, data.uid, aocId)
+        await addUserToGroup(groupId, data.uid, aocId, data.allowDerivatives)
     } else {
         throw new functions.https.HttpsError('failed-precondition',
             'You\'re not a member of the leaderboard associated with this join code');
