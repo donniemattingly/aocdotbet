@@ -44,12 +44,14 @@ const ErrorMessage = styled.span`
 export const CreateGroup = ({...props}) => {
     const [submitting, setSubmiting] = useState();
     const {register, handleSubmit, errors} = useForm();
+    const [createGroupError, setCreateGroupError] = useState(null);
     const onSubmit = async data => {
         setSubmiting(true);
+        setCreateGroupError(null);
         try {
             await firebase.functions().httpsCallable('createGroup')(data)
         } catch (error){
-            console.log(error);
+            setCreateGroupError(error.message);
         }
         setSubmiting(false);
     }
@@ -59,7 +61,11 @@ export const CreateGroup = ({...props}) => {
             <CreateGroupFormContainer onSubmit={handleSubmit(onSubmit)}>
 
                 <div>
-                    <p>You need to create a private leaderboard, once you have paste the ID below. (this is the first section of the join code)</p>
+                    <p>
+                        You must first create a private leaderboard.
+                        Once created, enter the ID of the leaderboard below.
+                        (this is the first section of the join code)
+                    </p>
                 </div>
                 <AocInput name="groupId" defaultValue="" ref={register({required: true})}/>
                 {errors.groupId && <ErrorMessage>Your group ID is required to update scores and confirm membership </ErrorMessage>}
@@ -72,6 +78,7 @@ export const CreateGroup = ({...props}) => {
                 <br/>
                 {!submitting && <AocSubmit value='[Submit]'/>}
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
+                {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
                 <p>If you have no idea what these are, you're likely in the wrong place. <AocLink to={'/'}> [Go Home] </AocLink></p>
             </CreateGroupFormContainer>
         </div>

@@ -9,20 +9,27 @@ const axios = require('axios');
 // });
 
 const getLeaderboard = async (leaderboardId, session) => {
-    try {
+    const response = await axios.request({
+        method: 'get',
+        url: `https://adventofcode.com/2020/leaderboard/private/view/${leaderboardId}.json`,
+        headers: {
+            Cookie: `session=${session}`
+        },
+        validateStatus: null
+    })
 
-        const response = await axios.request({
-            method: 'get',
-            url: `https://adventofcode.com/2020/leaderboard/private/view/${leaderboardId}.json`,
-            headers: {
-                Cookie: `session=${session}`
-            }
-        })
-
-        console.log(response.data);
-    } catch (error) {
+    if(response.status > 300){
         throw new functions.https.HttpsError('invalid-argument', 'Either the leaderboard or the session was invalid.')
     }
+
+    if (response.headers['content-type'] !== 'application/json') {
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'Either your session is incorrect or you do not have access to this leaderboard'
+        )
+    }
+
+    return response.data;
 }
 
 exports.createGroup = functions.https.onCall(async (data, context) => {
