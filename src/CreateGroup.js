@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import styled from 'styled-components';
 import {AocLink} from "./shared-components";
 import firebase from "firebase";
+import {UnicodeSpinner} from "./UnicodeSpinner";
 
 const CreateGroupFormContainer = styled.form`
   display: flex;
@@ -41,10 +42,17 @@ const ErrorMessage = styled.span`
 `
 
 export const CreateGroup = ({...props}) => {
-    const {register, handleSubmit, watch, errors} = useForm();
-    const onSubmit = data => firebase.functions().httpsCallable('createGroup')(data)
-
-    console.log(watch("example")); // watch input value by passing the name of it
+    const [submitting, setSubmiting] = useState();
+    const {register, handleSubmit, errors} = useForm();
+    const onSubmit = async data => {
+        setSubmiting(true);
+        try {
+            await firebase.functions().httpsCallable('createGroup')(data)
+        } catch (error){
+            console.log(error);
+        }
+        setSubmiting(false);
+    }
 
     return (
         <div>
@@ -62,8 +70,8 @@ export const CreateGroup = ({...props}) => {
 
                 {errors.sessionId && <ErrorMessage>Your session token is required to fetch data</ErrorMessage>}
                 <br/>
-                <AocSubmit value='[Submit]'/>
-
+                {!submitting && <AocSubmit value='[Submit]'/>}
+                {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                 <p>If you have no idea what these are, you're likely in the wrong place. <AocLink to={'/'}> [Go Home] </AocLink></p>
             </CreateGroupFormContainer>
         </div>
