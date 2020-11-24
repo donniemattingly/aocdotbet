@@ -1,5 +1,5 @@
 import React from "react";
-import {AocLink} from "./shared-components";
+import {AocLink} from "../shared-components";
 import {useStoreState} from "easy-peasy";
 
 
@@ -9,7 +9,10 @@ export const Groups = ({...props}) => {
       <div>
           <p>--- Groups ---</p>
           {user?.groups?.map(group => <AocLink key={group} to={`/groups/${group}`}> {group}</AocLink>)}
-          <p>Not in a group? You can <AocLink to={'/groups/create'}> [Create One]</AocLink></p>
+          <p>
+              Not in a group?
+              You can <AocLink to={'/groups/join'}> [Join One] </AocLink> or <AocLink to={'/groups/create'}> [Create One]</AocLink>
+          </p>
       </div>
   )
 };

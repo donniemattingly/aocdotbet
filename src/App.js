@@ -5,11 +5,12 @@ import {Home} from "./Home";
 import {Login} from "./Login";
 import {Nav} from "./Nav";
 import './firebaseConfig';
-import {Groups} from "./Groups";
+import {Groups} from "./groups/Groups";
 import {useFirebaseAuth} from "./hooks";
-import {CreateGroup} from "./CreateGroup";
-import {Group} from "./Group";
+import {CreateGroup} from "./groups/CreateGroup";
+import {Group} from "./groups/Group";
 import {Me} from "./Me";
+import {JoinGroup} from "./groups/JoinGroup";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -39,6 +40,9 @@ function App() {
                             </Route>
                             <Route path='/groups/create'>
                                 <CreateGroup/>
+                            </Route>
+                            <Route path='/groups/join'>
+                                <JoinGroup/>
                             </Route>
                             <Route exact path='/groups/:groupId'>
                                 <Group/>

@@ -19,10 +19,10 @@ jobs:
           node-version: ${{ matrix.node_version }}
 
       - name: Install packages
-        run: npm install
+        run: npm ci
 
       - name: Install Functions Packages
-        run: cd functions && npm install
+        run: cd functions && npm ci
 
       - name: Run build
         env:

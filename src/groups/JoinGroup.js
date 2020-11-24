@@ -1,9 +1,9 @@
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import styled from 'styled-components';
-import {AocLink} from "./shared-components";
+import {AocAnchor, AocLink} from "../shared-components";
 import firebase from "firebase";
-import {UnicodeSpinner} from "./UnicodeSpinner";
+import {UnicodeSpinner} from "../UnicodeSpinner";
 import {useStoreState} from "easy-peasy";
 
 const CreateGroupFormContainer = styled.form`
@@ -42,7 +42,7 @@ const ErrorMessage = styled.span`
   color: #800000;
 `
 
-export const CreateGroup = ({...props}) => {
+export const JoinGroup = ({...props}) => {
     const [submitting, setSubmiting] = useState();
     const {register, handleSubmit, errors} = useForm();
     const [createGroupError, setCreateGroupError] = useState(null);
@@ -65,7 +65,7 @@ export const CreateGroup = ({...props}) => {
 
     if (!loggedIn) {
         return <div>
-            <p> You must log in to create a group</p>
+            <p> You must log in to join a group</p>
         </div>
     } else {
 
@@ -75,24 +75,21 @@ export const CreateGroup = ({...props}) => {
 
                     <div>
                         <p>
-                            You must first create a private leaderboard.
-                            Once created, enter the ID of the leaderboard below.
-                            (this is the first section of the join code)
+                            To join a group, you need to be a member of the private leaderboard for this group
+                            on <AocAnchor href="https://adventofcode.com/2020/leaderboard/private">Advent of Code</AocAnchor>
+                        </p>
+
+                        <p>
+                            You can join the group by entering your leaderboard's join code here:
                         </p>
                     </div>
-                    <AocInput name="groupId" defaultValue="" ref={register({required: true})}/>
-                    {errors.groupId &&
-                    <ErrorMessage>Your group ID is required to update scores and confirm membership </ErrorMessage>}
-
-                    <p>
-                        As the group owner, we'll use your session token to fetch group results. Enter it below.
-                    </p>
-
-                    <AocInput name="session" ref={register({required: true})}/>
-
-                    {errors.sessionId && <ErrorMessage>Your session token is required to fetch data</ErrorMessage>}
+                    <span>
+                        <AocInput name="joinCode" defaultValue="" ref={register({required: true})}/>
+                        {!submitting && <AocSubmit value='[Submit]'/>}
+                    </span>
+                    {errors.joinCode &&
+                    <ErrorMessage>You must enter the join code </ErrorMessage>}
                     <br/>
-                    {!submitting && <AocSubmit value='[Submit]'/>}
                     {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
                     {createGroupSuccess && <span>Your Group was created!</span>}

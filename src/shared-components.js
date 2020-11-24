@@ -26,6 +26,10 @@ export const AocLink = styled(Link)`
   ${AocLinkStyles}
 `
 
+export const AocAnchor = styled.a`
+  ${AocLinkStyles}
+`
+
 export const AocButton = styled.button`
     ${AocLinkStyles};
     background: transparent;
