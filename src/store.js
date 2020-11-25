@@ -35,8 +35,8 @@ export const store = createStore(persist({
             return user;
         }
     }),
-    loadGroupsForUser: thunk(async (actions, id) => {
-        const doc = await firebase.firestore().collection('groups').doc('1').get();
+    loadGroup: thunk(async (actions, groupId) => {
+        const doc = await firebase.firestore().collection('groups').doc(groupId).get();
         if (doc.exists) {
             console.log(doc.data());
         }

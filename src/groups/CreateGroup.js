@@ -47,6 +47,7 @@ export const CreateGroup = ({...props}) => {
     const {register, handleSubmit, errors} = useForm();
     const [createGroupError, setCreateGroupError] = useState(null);
     const [createGroupSuccess, setCreateGroupSuccess] = useState(null);
+    const [joinCode, setJoinCode] = useState(null);
     const loggedIn = useStoreState(state => state.loggedIn);
     const userId = useStoreState(state => state.auth.id);
 
@@ -56,6 +57,7 @@ export const CreateGroup = ({...props}) => {
         setCreateGroupSuccess(null);
         try {
             const leaderboard = await firebase.functions().httpsCallable('createGroup')({uid: userId, ...data})
+            setJoinCode(data.joinCode);
             setCreateGroupSuccess(true);
         } catch (error) {
             setCreateGroupError(error.message);
@@ -94,8 +96,10 @@ export const CreateGroup = ({...props}) => {
                     {(!submitting && !createGroupSuccess) && <AocSubmit value='[Submit]'/>}
                     {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                     {createGroupError && <ErrorMessage>{createGroupError}</ErrorMessage>}
-                    {createGroupSuccess && <span>Your Group was created!</span>}
-
+                    {createGroupSuccess && <span>
+                        Your Group was created! Share this link with folks you'd like to invite:
+                    </span>}
+                    {createGroupSuccess && <span> https://aoc.bet/groups/join/{joinCode}</span>}
                     <p>
                         If you have no idea what these are, you're likely in the wrong place.
                         <AocLink to={'/'}>

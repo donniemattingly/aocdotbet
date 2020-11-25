@@ -8,7 +8,7 @@ const getLeaderboard = async (joinCode, session) => {
     const leaderboardId = joinCode.split('-')[0];
     const response = await axios.request({
         method: 'get',
-        url: `https://adventofcode.com/2019/leaderboard/private/view/${leaderboardId}.json`,
+        url: `https://adventofcode.com/2020/leaderboard/private/view/${leaderboardId}.json`,
         headers: {
             Cookie: `session=${session}`
         },
