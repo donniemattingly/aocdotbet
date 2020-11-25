@@ -4,7 +4,7 @@ import {Link} from "react-router-dom";
 import {useStoreActions, useStoreState} from "easy-peasy";
 import {AocButton, AocLink, AocLinkStyles} from "./shared-components";
 
-const Heading = styled.span`
+export const Heading = styled.span`
     display: inline-block;
     text-decoration: none;
     color: #00cc00;

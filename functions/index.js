@@ -1,6 +1,8 @@
 const functions = require('firebase-functions');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const { v4: uuidv4 } = require('uuid');
+
 admin.initializeApp();
 const db = admin.firestore()
 
@@ -151,3 +153,27 @@ exports.joinGroup = functions.https.onCall(async (data, context) => {
             'You\'re not a member of the leaderboard associated with this join code');
     }
 });
+
+exports.createWager = functions.https.onCall( async (data, context) => {
+    const {groupId, uid, details, opponent} = data;
+    console.log(data);
+    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(uid).get();
+    if(!membersSnapshot.exists){
+        throw new functions.https.HttpsError('unauthenticated', 'You must be a member of the group to create wagers in it.')
+    }
+
+    const opponentSnapshot = await db.collection(`groups/${groupId}/members`).doc(opponent).get();
+    if(!opponentSnapshot.exists){
+        throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t in this group')
+    }
+
+    const wagerToSave = {
+        id: uuidv4(),
+        proposedBy: uid,
+        proposedTo: opponent,
+        status: 'pending',
+        wager: details
+    }
+
+    await db.collection('groups').doc(groupId).collection('wagers').doc(wagerToSave.id).set(wagerToSave);
+})

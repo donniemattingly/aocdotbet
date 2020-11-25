@@ -13,7 +13,7 @@ const CreateGroupFormContainer = styled.form`
   justify-content: start;
 `
 
-const AocSubmit = styled.input.attrs({type: 'submit'})`
+export const AocSubmit = styled.input.attrs({type: 'submit'})`
     background: transparent;
     border: 0;
     font-family: inherit;
@@ -39,7 +39,7 @@ export const AocInput = styled.input`
     width: 20em;
 `
 
-const ErrorMessage = styled.span`
+export const ErrorMessage = styled.span`
   color: #800000;
 `
 

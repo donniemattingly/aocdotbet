@@ -4,6 +4,7 @@ import firebase from "firebase";
 import {UnicodeSpinner} from "../UnicodeSpinner";
 import styled from 'styled-components';
 import {AocLink} from "../shared-components";
+import {Heading} from "../Nav";
 
 const HalfDay = styled.span`
   color: #9999cc
@@ -22,8 +23,8 @@ const completionLevelsToStars = (completionLevels) => {
         .map(k => k + 1)
         .map(dayNum => {
             const day = completionLevels[dayNum];
-            if(day && day[1]){
-                if(day[2]){
+            if (day && day[1]) {
+                if (day[2]) {
                     return <FullDay>*</FullDay>
                 } else {
                     return <HalfDay>*</HalfDay>
@@ -51,7 +52,8 @@ const GroupMember = ({member, rank}) => {
         <GroupMemberContainer>
             <GroupMemberCell> {rank + 1}{' '} </GroupMemberCell>
             <GroupMemberCell>
-                <AocLink to={`/groups/${groupId}/members/${member.id}`}>{member.name}</AocLink>
+                {member.uid && <AocLink to={`/groups/${groupId}/members/${member.id}`}>{member.name}</AocLink>}
+                {!member.uid && member.name}
             </GroupMemberCell>
             <GroupMemberCell>{completionLevelsToStars(member.completion_day_level)}</GroupMemberCell>
         </GroupMemberContainer>
@@ -90,14 +92,18 @@ export const Group = ({...props}) => {
     members.sort((a, b) => b.local_score - a.local_score)
     return (
         <div>
-         <p>
-             --- Leaderboard ---
-         </p>
-        <MemberRowsContainer>
-            <tbody>
+            <p>
+                --- Leaderboard ---
+            </p>
+            <p>
+                As members of your private leaderboard join <AocLink to={'/'}>aoc.bet</AocLink> you will be able to make wagers with them.
+            </p>
+
+            <MemberRowsContainer>
+                <tbody>
                 {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
-            </tbody>
-        </MemberRowsContainer>
+                </tbody>
+            </MemberRowsContainer>
         </div>
     )
 };
