@@ -124,7 +124,7 @@ const getAocIdFromLeaderboard = (name, leaderboard) => {
     const leaderboardEntry = Object.keys(leaderboard.members)
         .map(k => ({aocId: k, ...leaderboard.members[k]}))
         .find(l => l.name = name);
-    return leaderboardEntry?.aocId;
+    return leaderboardEntry && leaderboardEntry.aocId;
 }
 
 exports.createGroup = functions.https.onCall(async (data, context) => {
