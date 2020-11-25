@@ -90,8 +90,8 @@ const updateLeaderboardForGroup = async (groupId) => {
                 ...acc,
                 [x]: {
                     ...leaderboard.members[x],
-                    uid: members[x].uid || null,
-                    allowDerivatives: members[x]?.allowDerivatives ?? false
+                    uid: (members && members[x] && members[x].uid) || null,
+                    allowDerivatives: (members && members[x] && members[x].allowDerivatives) || false
                 }
             }
         ), {})
