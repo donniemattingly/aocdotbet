@@ -11,6 +11,7 @@ import {CreateGroup} from "./groups/CreateGroup";
 import {Group} from "./groups/Group";
 import {Me} from "./Me";
 import {JoinGroup} from "./groups/JoinGroup";
+import {GroupMember} from "./groups/GroupMember";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -49,6 +50,9 @@ function App() {
                             </Route>
                             <Route exact path='/groups/:groupId'>
                                 <Group/>
+                            </Route>
+                            <Route exact path='/groups/:groupId/members/:memberId'>
+                                <GroupMember/>
                             </Route>
                             <Route exact path='/me'>
                                 <Me/>

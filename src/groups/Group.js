@@ -3,6 +3,7 @@ import {useParams} from "react-router-dom"
 import firebase from "firebase";
 import {UnicodeSpinner} from "../UnicodeSpinner";
 import styled from 'styled-components';
+import {AocLink} from "../shared-components";
 
 const HalfDay = styled.span`
   color: #9999cc
@@ -45,10 +46,13 @@ const GroupMemberName = styled.span`
 
 `
 const GroupMember = ({member, rank}) => {
+    const {groupId} = useParams()
     return (
         <GroupMemberContainer>
             <GroupMemberCell> {rank + 1}{' '} </GroupMemberCell>
-            <GroupMemberCell>{member.name}</GroupMemberCell>
+            <GroupMemberCell>
+                <AocLink to={`/groups/${groupId}/members/${member.id}`}>{member.name}</AocLink>
+            </GroupMemberCell>
             <GroupMemberCell>{completionLevelsToStars(member.completion_day_level)}</GroupMemberCell>
         </GroupMemberContainer>
     )
@@ -90,7 +94,9 @@ export const Group = ({...props}) => {
              --- Leaderboard ---
          </p>
         <MemberRowsContainer>
-            {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
+            <tbody>
+                {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
+            </tbody>
         </MemberRowsContainer>
         </div>
     )
