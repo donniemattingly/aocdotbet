@@ -87,7 +87,7 @@ export const Group = ({...props}) => {
     return (
         <div>
          <p>
-             --- Group Members ---
+             --- Leaderboard ---
          </p>
         <MemberRowsContainer>
             {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
