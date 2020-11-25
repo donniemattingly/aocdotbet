@@ -8,6 +8,11 @@ service cloud.firestore {
     match /groups/{groupId} {
       allow read: if request.auth != null && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
     }
+
+    match /groups/{groupId}/wagers/{wagerId} {
+      allow read: if request.auth != null && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

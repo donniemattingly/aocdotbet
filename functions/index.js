@@ -175,5 +175,23 @@ exports.createWager = functions.https.onCall( async (data, context) => {
         wager: details
     }
 
-    await db.collection('groups').doc(groupId).collection('wagers').doc(wagerToSave.id).set(wagerToSave);
+    const wagerRef = {
+        groupId: groupId,
+        wagerId: wagerToSave.id,
+        wager: wagerToSave
+    }
+
+    await db.collection('groups')
+        .doc(groupId)
+        .collection('wagers')
+        .doc(wagerToSave.id)
+        .set(wagerToSave);
+
+    await db.collection('users')
+        .doc(uid)
+        .update({wagers: admin.firestore.FieldValue.arrayUnion(wagerRef)})
+
+    await db.collection('users')
+        .doc(opponent)
+        .update({wagers: admin.firestore.FieldValue.arrayUnion(wagerRef)})
 })

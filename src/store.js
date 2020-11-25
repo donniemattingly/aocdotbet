@@ -31,10 +31,15 @@ export const store = createStore(persist({
         const doc = await firebase.firestore().collection('users').doc(id).get();
         if (doc.exists) {
             const user = doc.data();
+            console.log(user);
             actions.setUser(user);
             return user;
         }
     }),
+    // updateUser: thunk(async (actions, payload, {getState}) => {
+    //     const state = getState();
+    //     const userId = state.user
+    // }),
     loadGroup: thunk(async (actions, groupId) => {
         const doc = await firebase.firestore().collection('groups').doc(groupId).get();
         if (doc.exists) {

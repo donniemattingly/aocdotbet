@@ -6,7 +6,7 @@ import {AocAnchor, AocLink, AocRadio, Smaller} from "../shared-components";
 import {AocInput, AocSubmit, ErrorMessage} from "./JoinGroup";
 import {useForm} from "react-hook-form";
 import styled from 'styled-components';
-import {useStoreState} from "easy-peasy";
+import {useStoreActions, useStoreState} from "easy-peasy";
 
 const WagerInput = styled(AocInput)`
   width: 4em;
@@ -24,6 +24,8 @@ export const GroupMember = ({...props}) => {
     const [errorMessage, setErrorMessage] = useState(null);
     const [success, setSuccess] = useState(false);
 
+    const loadUser = useStoreActions(actions => actions.loadUser);
+
     const onSubmit = async data => {
         setSubmitting(true);
         try {
@@ -39,6 +41,7 @@ export const GroupMember = ({...props}) => {
             }
             await firebase.functions().httpsCallable('createWager')(wager)
             setSuccess(true);
+            await loadUser(auth.id);
         } catch (error) {
             setErrorMessage(error.message);
         }
