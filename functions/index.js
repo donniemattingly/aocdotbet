@@ -167,10 +167,16 @@ exports.createWager = functions.https.onCall( async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t in this group')
     }
 
+    const opponentUserSnapshot = await db.collection('users').doc(opponentSnapshot.data().uid).get();
+    if(!opponentUserSnapshot.exists){
+        throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
+    }
+
     const wagerToSave = {
         id: uuidv4(),
         proposedBy: uid,
         proposedTo: opponent,
+        opponent: opponentUserSnapshot.data().name,
         status: 'pending',
         wager: details
     }
