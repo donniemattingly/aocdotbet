@@ -3,9 +3,6 @@ import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import firebase from "firebase";
 import {useStoreState} from "easy-peasy";
-import {SimpleStarsWager} from "../wagers/SimpleStarsWager";
-import {StarsOverUnderWager} from "../wagers/StarsOverUnderWager";
-import {AtLeastStarsThem} from "../wagers/AtLeastStarsThem";
 import {BaseWager} from "../wagers/BaseWager";
 
 export const GroupMember = ({...props}) => {
