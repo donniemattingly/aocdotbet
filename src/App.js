@@ -12,6 +12,7 @@ import {Group} from "./groups/Group";
 import {Me} from "./Me";
 import {JoinGroup} from "./groups/JoinGroup";
 import {GroupMember} from "./groups/GroupMember";
+import {ManageWager} from "./wagers/ManageWager";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -53,6 +54,9 @@ function App() {
                             </Route>
                             <Route exact path='/groups/:groupId/members/:memberId'>
                                 <GroupMember/>
+                            </Route>
+                            <Route exact path='/groups/:groupId/wagers/:wagerId'>
+                                <ManageWager/>
                             </Route>
                             <Route exact path='/me'>
                                 <Me/>

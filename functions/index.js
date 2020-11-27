@@ -202,14 +202,55 @@ exports.createWager = functions.https.onCall( async (data, context) => {
         .doc(wagerToSave.id)
         .set(wagerToSave);
 
+    const path = `wagers.${wagerToSave.id}`
+
     await db.collection('users')
         .doc(uid)
-        .update({wagers: admin.firestore.FieldValue.arrayUnion(wagerRef)})
+        .update({[path]: wagerRef})
 
     await db.collection('users')
         .doc(opponent)
-        .update({wagers: admin.firestore.FieldValue.arrayUnion(wagerRef)})
+        .update({[path]: wagerRef})
 })
+
+exports.confirmWager = functions.https.onCall(async (data, context) => {
+    console.log(data);
+    const doc = await db.collection('groups').doc(data.groupId)
+        .collection('wagers').doc(data.wagerId).get();
+
+    if(!doc.exists){
+        throw new functions.https.HttpsError('failed-precondition', 'This wager doesn\'t exist');
+    }
+
+    const wager = doc.data();
+
+    if(wager.proposedTo.uid !== context.auth.uid){
+        throw new functions.https.HttpsError('failed-precondition', 'This user may not accept the wager');
+    }
+
+    const newWager = {
+        ...wager,
+        status: 'booked',
+        groupId: data.groupId
+    }
+
+    await db.collection('groups')
+        .doc(data.groupId)
+        .collection('wagers')
+        .doc(data.wagerId)
+        .set(newWager);
+
+
+    const path = `wagers.${data.wagerId}`
+
+    await db.collection('users')
+        .doc(wager.proposedTo.uid)
+        .update({[path]: newWager})
+
+    await db.collection('users')
+        .doc(wager.proposedBy.uid)
+        .update({[path]: newWager})
+});
 
 exports.initWagerTypes = functions.https.onCall(async (data, context) => {
     /*
