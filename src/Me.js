@@ -13,7 +13,7 @@ export const Me = ({...props}) => {
             {user?.groups?.map(group => <p><AocLink key={group} to={`/groups/${group}`}> {group}</AocLink></p>)}
 
             <p>--- My Wagers ---</p>
-            {Object.values(user?.wagers ?? {}).map(wager => <WagerRow wager={wager} auth={auth}/> )}
+            {Object.values(user?.wagers ?? {}).map(wager => <WagerRow wager={wager} auth={auth} linkToWager={true}/> )}
         </div>
     )
 };

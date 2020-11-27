@@ -167,6 +167,10 @@ exports.createWager = functions.https.onCall( async (data, context) => {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t in this group')
     }
 
+    if(opponentSnapshot.data().uid === context.auth.uid){
+        throw new functions.https.HttpsError('failed-precondition', 'You can\'t create a wager with yourself')
+    }
+
     const opponentUserSnapshot = await db.collection('users').doc(opponentSnapshot.data().uid).get();
     if(!opponentUserSnapshot.exists){
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');

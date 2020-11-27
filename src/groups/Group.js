@@ -5,6 +5,7 @@ import {UnicodeSpinner} from "../UnicodeSpinner";
 import styled from 'styled-components';
 import {AocLink} from "../shared-components";
 import {Heading} from "../Nav";
+import {WagerRow} from "../wagers/WagerRow";
 
 const HalfDay = styled.span`
   color: #9999cc
@@ -67,6 +68,7 @@ const MemberRowsContainer = styled.table`
 export const Group = ({...props}) => {
     const {groupId} = useParams();
     const [group, setGroup] = useState(null);
+    const [wagers, setWagers] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -74,9 +76,11 @@ export const Group = ({...props}) => {
             const doc = await firebase.firestore().collection('groups').doc(groupId).get();
             if (doc.exists) {
                 setGroup(doc.data());
-                console.log(doc.data());
-                setLoading(false);
             }
+            const wagersSnapshot = await firebase.firestore().collection('groups').doc(groupId).collection('wagers').get();
+            setWagers(wagersSnapshot.docs.map(doc => doc.data()))
+
+            setLoading(false);
         })()
     }, [groupId])
 
@@ -96,7 +100,8 @@ export const Group = ({...props}) => {
                 --- Leaderboard ---
             </p>
             <p>
-                As members of your private leaderboard join <AocLink to={'/'}>aoc.bet</AocLink> you will be able to make wagers with them.
+                As members of your private leaderboard join <AocLink to={'/'}>aoc.bet</AocLink> you will be able to make
+                wagers with them.
             </p>
 
             <MemberRowsContainer>
@@ -104,6 +109,16 @@ export const Group = ({...props}) => {
                 {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
                 </tbody>
             </MemberRowsContainer>
+
+            <p>
+                --- Wagers ---
+            </p>
+            <p>
+                Here are the pending and booked wagers for this group
+            </p>
+            <div>
+                {wagers.map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
+            </div>
         </div>
     )
 };
