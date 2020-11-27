@@ -201,3 +201,19 @@ exports.createWager = functions.https.onCall( async (data, context) => {
         .doc(opponent)
         .update({wagers: admin.firestore.FieldValue.arrayUnion(wagerRef)})
 })
+
+exports.initWagerTypes = functions.https.onCall(async (data, context) => {
+    /*
+    * This defines the allowed wager types all wagers are in the format of 'bet x to win y'
+    * */
+    const wagers = {
+        simpleStars: {
+            callToAction: 'Think you\'ll get more stars?',
+            params: {
+                bet: {
+                    desc: 'You\'ll bet this amount'
+                }
+            }
+        }
+    }
+});

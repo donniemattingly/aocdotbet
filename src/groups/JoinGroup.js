@@ -113,8 +113,9 @@ export const JoinGroup = ({...props}) => {
                     <Smaller>
                         <AocRadio
                         onClick={() => setAllowDerivatives(!allowDerivatives)}
-                        value={allowDerivatives}
-                        label='Allow others to make wagers about my results'/>
+                        value={allowDerivatives}>
+                            Allow others to make wagers about my results
+                        </AocRadio>
                     </Smaller>
                 </CreateGroupFormContainer>
             </div>

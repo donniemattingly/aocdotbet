@@ -46,7 +46,7 @@ export const AocButton = styled.button`
     text-align: start;
 `
 
-const AocRadioSpan = styled.span`
+export const AocRadioSpan = styled.span`
   cursor: pointer;
   user-select: none;
   font-size: inherit;
@@ -60,8 +60,8 @@ export const Smaller = styled.span`
   opacity: 0.5
 `
 
-export const AocRadio = ({label, onClick, value}) => {
+export const AocRadio = ({label, onClick, value, ...props}) => {
     return (
-        <AocRadioSpan onClick={onClick}> [{value ? 'X' : ' '}] {label}</AocRadioSpan>
+        <AocRadioSpan onClick={onClick}> [{value ? 'X' : ' '}] {props.children}</AocRadioSpan>
     )
 }
