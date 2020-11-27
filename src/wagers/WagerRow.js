@@ -35,6 +35,7 @@ export const WagerRow = ({wager, auth}) => {
             {wager.status === 'pending' && <span>
                 <AocLink to={`/groups/${wager.groupId}/wagers/${wager.id}`}>Pending:</AocLink>
             </span>}
+            {wager.status == 'booked' && 'Booked: '}
             <span> {getWagerDescription(wager, auth)} </span>
         </div>
     )

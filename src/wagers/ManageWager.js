@@ -36,6 +36,7 @@ export const ManageWager = ({...props}) => {
         setSubmitting(true);
         try {
             await confirmWager(groupId, wagerId);
+            setStatus({success: true})
         } catch(error){
             setStatus({error: true, message: error.message})
             setSubmitting(false)
