@@ -19,6 +19,10 @@ export const Home = ({...props}) => {
             <p>
                 Wager with friends on advent of code!
             </p>
+            <p>
+                Join a group based on an advent of code private leaderboard, and you can propose wagers to
+                other members of the group.
+            </p>
         </HomeContainer>
     )
 }
