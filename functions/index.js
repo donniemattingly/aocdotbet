@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const axios = require('axios');
 const admin = require('firebase-admin');
-const { v4: uuidv4 } = require('uuid');
+const {v4: uuidv4} = require('uuid');
 
 admin.initializeApp();
 const db = admin.firestore()
@@ -123,8 +123,8 @@ const isUserMemberOfLeaderboardForGroup = async (uid, groupId) => {
 const getAocIdFromLeaderboard = (name, leaderboard) => {
     const leaderboardEntry = Object.keys(leaderboard.members)
         .map(k => ({aocId: k, ...leaderboard.members[k]}))
-        .find(l => l.name = name);
-    return leaderboardEntry && leaderboardEntry.aocId;
+        .find(l => l.name === name);
+    return (leaderboardEntry && leaderboardEntry.aocId) || null;
 }
 
 exports.createGroup = functions.https.onCall(async (data, context) => {
@@ -154,30 +154,30 @@ exports.joinGroup = functions.https.onCall(async (data, context) => {
     }
 });
 
-exports.createWager = functions.https.onCall( async (data, context) => {
+exports.createWager = functions.https.onCall(async (data, context) => {
     const {groupId, uid, details, opponent} = data;
     console.log(data);
     const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(uid).get();
-    if(!membersSnapshot.exists){
+    if (!membersSnapshot.exists) {
         throw new functions.https.HttpsError('unauthenticated', 'You must be a member of the group to create wagers in it.')
     }
 
     const opponentSnapshot = await db.collection(`groups/${groupId}/members`).doc(opponent).get();
-    if(!opponentSnapshot.exists){
+    if (!opponentSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t in this group')
     }
 
-    if(opponentSnapshot.data().uid === context.auth.uid){
+    if (opponentSnapshot.data().uid === context.auth.uid) {
         throw new functions.https.HttpsError('failed-precondition', 'You can\'t create a wager with yourself')
     }
 
     const opponentUserSnapshot = await db.collection('users').doc(opponentSnapshot.data().uid).get();
-    if(!opponentUserSnapshot.exists){
+    if (!opponentUserSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
     }
 
     const creatingUserSnapshot = await db.collection('users').doc(uid).get();
-    if(!creatingUserSnapshot.exists){
+    if (!creatingUserSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
     }
 
@@ -222,13 +222,13 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
     const doc = await db.collection('groups').doc(data.groupId)
         .collection('wagers').doc(data.wagerId).get();
 
-    if(!doc.exists){
+    if (!doc.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'This wager doesn\'t exist');
     }
 
     const wager = doc.data();
 
-    if(wager.proposedTo.uid !== context.auth.uid){
+    if (wager.proposedTo.uid !== context.auth.uid) {
         throw new functions.https.HttpsError('failed-precondition', 'This user may not accept the wager');
     }
 
@@ -271,3 +271,9 @@ exports.initWagerTypes = functions.https.onCall(async (data, context) => {
         }
     }
 });
+
+const keepLeaderboardUpdated = functions.pubsub.schedule('every 15 minutes').onRun(async (context) => {
+    const groupsSnapshot = await db.collection('groups').get()
+    await Promise.allSettled(groupsSnapshot.docs.map(doc => doc.id)
+        .map(updateLeaderboardForGroup))
+})
