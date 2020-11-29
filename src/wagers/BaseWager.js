@@ -98,7 +98,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
     const timeConstraint = completionTime ?
         <span> at least <WagerInput ref={register({required: !!completionTime})} name='hoursToCompletion' type='number'/> hour(s) after they were released </span> : ''
     const dateConstraint = byDate ?
-        <span> by <WagerInput ref={register({required:!!byDate})} name='completedBy' type='date' defaultValue='2021-01-01'/> </span> : '';
+        <span> by <WagerInput ref={register({required:!!byDate})} name='completedBy' type='date' defaultValue='2021-01-10'/> </span> : '';
     const wagerDirection = <span>
         that <WagerMemberSelection name="actor" register={register({required: true})} subject={true} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/>
         {' '} <WagerDirectionSelect register={register({required: true})}/> {' '}
