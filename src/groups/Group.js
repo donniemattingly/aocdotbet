@@ -117,7 +117,7 @@ export const Group = ({...props}) => {
                 Here are the pending and booked wagers for this group
             </p>
             <div>
-                {wagers.map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
+                {wagers.filter(wager => wager.status !== 'rejected').map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
             </div>
         </div>
     )

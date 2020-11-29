@@ -19,8 +19,8 @@ const getWager = async (groupId, wagerId) => {
     }
 }
 
-const confirmWager = async (groupId, wagerId) => {
-    await firebase.functions().httpsCallable('confirmWager')({groupId, wagerId})
+const submitResponseToWager = async (groupId, wagerId, accept) => {
+    await firebase.functions().httpsCallable('confirmWager')({groupId, wagerId, accept})
 }
 
 export const ManageWager = ({...props}) => {
@@ -28,16 +28,16 @@ export const ManageWager = ({...props}) => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [status, setStatus] = useState({});
-    const [wager, setWager] = useState(null)
+    const [wager, setWager] = useState({})
     const auth = useStoreState(state => state.auth);
-    const proposedByMe = wager?.proposedBy.uid === auth?.id;
+    const proposedByMe = wager?.proposedBy?.uid === auth?.id;
 
-    const doConfirmWager = async () => {
+    const respondToWager = async (accept) => {
         setSubmitting(true);
         try {
-            await confirmWager(groupId, wagerId);
+            await submitResponseToWager(groupId, wagerId, accept);
             setStatus({success: true})
-        } catch(error){
+        } catch (error) {
             setStatus({error: true, message: error.message})
             setSubmitting(false)
         }
@@ -48,6 +48,7 @@ export const ManageWager = ({...props}) => {
         (async () => {
             const wager = await getWager(groupId, wagerId)
             setWager(wager)
+            console.log(wager);
             setLoading(false);
         })()
     }, [groupId, wagerId])
@@ -71,10 +72,13 @@ export const ManageWager = ({...props}) => {
             <br/>
             <div>
                 {(!proposedByMe && wager.status === 'pending' && !submitting && !status.success) &&
-                <AocButton onClick={() => doConfirmWager()}> [Confirm this Wager] </AocButton>
+                <span>
+                    <AocButton onClick={() => respondToWager(true)}> [Confirm this Wager] </AocButton>
+                    <AocButton onClick={() => respondToWager(false)}> [Reject this Wager] </AocButton>
+                </span>
                 }
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
-                {status.success && 'You confirmed the wager!'}
+                {status.success && 'You responded to the wager!'}
                 {status.error && <ErrorMessage> {status.message} </ErrorMessage>}
             </div>
         </div>

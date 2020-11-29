@@ -6,7 +6,7 @@ import {useStoreState} from "easy-peasy";
 import {BaseWager} from "../wagers/BaseWager";
 
 export const GroupMember = ({...props}) => {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [group, setGroup] = useState(null);
     const {memberId, groupId} = useParams();
     const auth = useStoreState(state => state.auth)
@@ -34,6 +34,7 @@ export const GroupMember = ({...props}) => {
         <div>
             <p>--- Make a wager with {group?.leaderboard?.members[memberId]?.name} ---</p>
             <BaseWager
+                group={group}
                 myUid={auth.id}
                 opponentUid={group?.leaderboard?.members[memberId].uid}
                 groupId={groupId}

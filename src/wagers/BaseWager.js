@@ -6,7 +6,7 @@
  */
 
 import React, {useState} from "react";
-import {AocRadio, AocRadioSpan} from "../shared-components";
+import {AocRadio} from "../shared-components";
 import styled from "styled-components";
 import {useForm} from "react-hook-form";
 import firebase from "firebase";
@@ -38,12 +38,43 @@ const WagerOptionsContainer = styled.div`
   flex-direction: column;
 `
 
-export const BaseWager = ({opponentUid, myUid, groupId}) => {
-    const [starsTotal, setStarsTotal] = useState(10);
+const AocSelect = styled.select`
+    color: inherit;
+    border: 1px solid #666666;
+    background: #10101a;
+    padding: 0 2px;
+    font-family: inherit;
+    font-size: inherit;
+    margin: 0;
+`
+const idToObjectMapToArray = (obj) => Object.keys(obj).map(key => ({id: key, ...obj[key]}));
+
+const WagerMemberSelection = ({leaderboard, uid, opponentUid, subject = true, register, name}) => {
+    const getAllowedSelections = () => {
+        return idToObjectMapToArray(leaderboard?.members ?? {}).filter(member => member.uid)
+    }
+    return (
+        <AocSelect ref={register} name={name} id="actor">
+            <option key={uid} value={uid}>{subject ? 'I' : 'Me'}</option>
+            {getAllowedSelections().map(member => <option key={member.uid} value={member.uid}> {member.name}</option>)}
+        </AocSelect>
+    )
+}
+
+const WagerDirectionSelect = ({register}) => {
+    return (
+        <AocSelect ref={register} name="wagerDirection" id="wagerDirection">
+            <option value='over'>will</option>
+            <option value='under'>won't</option>
+        </AocSelect>
+    )
+}
+
+export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
     const [secondStars, setSecondStars] = useState(false);
     const [completionTime, setCompletionTime] = useState(false);
     const [byDate, setByDate] = useState(true)
-    const [aboutMe, setAboutMe] = useState(false)
+    const [headToHead, setHeadToHead] = useState(false)
 
     const {register, handleSubmit, errors} = useForm();
     const [submitting, setSubmitting] = useState(false);
@@ -52,26 +83,34 @@ export const BaseWager = ({opponentUid, myUid, groupId}) => {
 
     const starType = secondStars ? ' second' : '';
     const timeConstraint = completionTime ?
-        <span> at least <WagerInput ref={register()} name='hoursToCompletion' type='number'/> hour(s) after they were released </span> : ''
-    const dateConstraint = byDate ? <span> by <WagerInput ref={register()} name='completedBy' type='date' value='2021-01-01'/> </span> : '';
-    const wagerDirection = aboutMe ? 'that I will ' : 'that they won\'t ';
-
+        <span> at least <WagerInput ref={register} name='hoursToCompletion' type='number'/> hour(s) after they were released </span> : ''
+    const dateConstraint = byDate ?
+        <span> by <WagerInput ref={register} name='completedBy' type='date' defaultValue='2021-01-01'/> </span> : '';
+    const wagerDirection = <span>
+        that <WagerMemberSelection name="actor" register={register} subject={true} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/>
+        {' '} <WagerDirectionSelect register={register}/> {' '}
+    </span>;
+    const headToHeadClause = headToHead ? <span> than <WagerMemberSelection name="opponent" register={register} subject={false} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/> </span> : ''
+    const victoryCondition = headToHead ? 'earn more' :
+        <span> earn <WagerInput ref={register} name='numStars' type='number'/> </span>
     const onSubmit = async data => {
         setSubmitting(true);
         setErrorMessage(null);
         setSuccess(false);
         try {
             const wager = {
-                opponent: opponentUid,
-                uid: myUid,
+                proposedTo: opponentUid,
+                proposedBy: myUid,
                 groupId: groupId,
                 details: {
+                    actor: data.actor,
+                    opponent: data.opponent,
                     bet: data.betAmount,
                     numStars: data.numStars,
                     secondStars: secondStars,
                     hoursToCompletion: data.hoursToCompletion,
                     completedBy: data.completedBy,
-                    aboutMe: aboutMe
+                    direction: data.wagerDirection,
                 }
             }
             await firebase.functions().httpsCallable('createWager')(wager)
@@ -82,20 +121,33 @@ export const BaseWager = ({opponentUid, myUid, groupId}) => {
         setSubmitting(false);
     }
 
+    const headToHeadClicked = () => {
+        setHeadToHead(!headToHead)
+    }
+
     return (
         <div>
             <WagerOptionsContainer>
                 <AocRadio value={secondStars} onClick={() => setSecondStars(!secondStars)}>
                     second stars only
                 </AocRadio>
-                <AocRadio value={completionTime} onClick={() => {setCompletionTime(!completionTime); setByDate(completionTime);}}>
+                <AocRadio value={completionTime} onClick={() => {
+                    setCompletionTime(!completionTime);
+                    setByDate(completionTime);
+                }}>
                     each star within a certain time
                 </AocRadio>
-                <AocRadio value={!!byDate} onClick={() => {setCompletionTime(byDate); setByDate(!byDate);}}>
+                <AocRadio value={!!byDate} onClick={() => {
+                    setCompletionTime(byDate);
+                    setByDate(!byDate);
+                }}>
                     by a certain date
                 </AocRadio>
-                <AocRadio value={!!aboutMe} onClick={() => setAboutMe(!aboutMe)}>
-                    about me
+                {/*<AocRadio value={!!aboutMe} onClick={aboutMeClicked}>*/}
+                {/*    about me*/}
+                {/*</AocRadio>*/}
+                <AocRadio value={!!headToHead} onClick={headToHeadClicked}>
+                    head to head
                 </AocRadio>
             </WagerOptionsContainer>
             <br/>
@@ -103,10 +155,10 @@ export const BaseWager = ({opponentUid, myUid, groupId}) => {
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <span>
-                     Bet $<WagerInput ref={register()} type='number' name='betAmount'/> {wagerDirection}
-                     earn <WagerInput ref={register()} name='numStars' type='number'/>
-                     {starType} stars {timeConstraint} {dateConstraint}
+                     Bet $<WagerInput ref={register} type='number' name='betAmount' min={0}/> {wagerDirection}
+                    {victoryCondition} {starType} stars {timeConstraint} {dateConstraint} {headToHeadClause}
                 </span>
+                <br/>
                 <br/>
                 {(!submitting && !success) && <AocSubmit value='[Propose]'/>}
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}

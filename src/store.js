@@ -4,7 +4,6 @@ import firebase from "firebase";
 export const store = createStore(persist({
     joinCode: null,
     setJoinCode: action((state, joinCode) => {
-        console.log(joinCode);
         state.joinCode = joinCode;
     }),
     auth: {loggedIn: false},
@@ -31,7 +30,6 @@ export const store = createStore(persist({
         const doc = await firebase.firestore().collection('users').doc(id).get();
         if (doc.exists) {
             const user = doc.data();
-            console.log(user);
             actions.setUser(user);
             return user;
         }
@@ -47,7 +45,6 @@ export const store = createStore(persist({
         }
     }),
     signIn: thunk(async (actions, firebaseUser) => {
-        console.log('signing in');
         actions.setAuth(firebaseUser);
         const user = await actions.loadUser(firebaseUser.uid);
         if (!user) {

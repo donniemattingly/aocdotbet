@@ -155,42 +155,63 @@ exports.joinGroup = functions.https.onCall(async (data, context) => {
 });
 
 exports.createWager = functions.https.onCall(async (data, context) => {
-    const {groupId, uid, details, opponent} = data;
-    console.log(data);
-    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(uid).get();
+    const {groupId, proposedTo, proposedBy, details} = data;
+    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(proposedBy).get();
     if (!membersSnapshot.exists) {
         throw new functions.https.HttpsError('unauthenticated', 'You must be a member of the group to create wagers in it.')
     }
 
-    const opponentSnapshot = await db.collection(`groups/${groupId}/members`).doc(opponent).get();
-    if (!opponentSnapshot.exists) {
+    const proposedToSnapshot = await db.collection(`groups/${groupId}/members`).doc(proposedTo).get();
+    if (!proposedToSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t in this group')
     }
 
-    if (opponentSnapshot.data().uid === context.auth.uid) {
-        throw new functions.https.HttpsError('failed-precondition', 'You can\'t create a wager with yourself')
-    }
+    // if (proposedToSnapshot.data().uid === context.auth.uid) {
+    //     throw new functions.https.HttpsError('failed-precondition', 'You can\'t create a wager with yourself')
+    // }
 
-    const opponentUserSnapshot = await db.collection('users').doc(opponentSnapshot.data().uid).get();
-    if (!opponentUserSnapshot.exists) {
+    const proposedToUserSnapshot = await db.collection('users').doc(proposedToSnapshot.data().uid).get();
+    if (!proposedToUserSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
     }
 
-    const creatingUserSnapshot = await db.collection('users').doc(uid).get();
+    const creatingUserSnapshot = await db.collection('users').doc(proposedBy).get();
     if (!creatingUserSnapshot.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
     }
 
+    const actorUserSnapshot = await db.collection('users').doc(details.actor).get();
+    if (!actorUserSnapshot.exists) {
+        throw new functions.https.HttpsError('failed-precondition', 'The actor of the wager isn\'t registered');
+    }
+
+    let opponentUserSnapshot;
+    if (details.opponent) {
+        opponentUserSnapshot = await db.collection('users').doc(details.opponent).get();
+        if (!opponentUserSnapshot.exists) {
+            throw new functions.https.HttpsError('failed-precondition', 'The opponent of the wager isn\'t registered');
+        }
+    }
+
+
     const wagerToSave = {
         id: uuidv4(),
         proposedBy: {
-            uid,
+            uid: proposedBy,
             name: creatingUserSnapshot.data().name
         },
         proposedTo: {
-            uid: opponent,
-            name: opponentUserSnapshot.data().name,
+            uid: proposedTo,
+            name: proposedToUserSnapshot.data().name,
         },
+        actor: {
+            uid: details.actor,
+            name: actorUserSnapshot.data().name,
+        },
+        opponent: details.opponent ? {
+            uid: details.opponent,
+            name: opponentUserSnapshot?.data().name,
+        } : null,
         status: 'pending',
         details: details
     }
@@ -209,18 +230,19 @@ exports.createWager = functions.https.onCall(async (data, context) => {
     const path = `wagers.${wagerToSave.id}`
 
     await db.collection('users')
-        .doc(uid)
+        .doc(proposedBy)
         .update({[path]: wagerRef})
 
     await db.collection('users')
-        .doc(opponent)
+        .doc(proposedTo)
         .update({[path]: wagerRef})
 })
 
 exports.confirmWager = functions.https.onCall(async (data, context) => {
-    console.log(data);
-    const doc = await db.collection('groups').doc(data.groupId)
-        .collection('wagers').doc(data.wagerId).get();
+    const {groupId, wagerId, accept} = data;
+
+    const doc = await db.collection('groups').doc(groupId)
+        .collection('wagers').doc(wagerId).get();
 
     if (!doc.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'This wager doesn\'t exist');
@@ -234,8 +256,8 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
 
     const newWager = {
         ...wager,
-        status: 'booked',
-        groupId: data.groupId
+        status: accept ? 'booked' : 'rejected',
+        groupId: groupId
     }
 
     await db.collection('groups')
@@ -272,7 +294,7 @@ exports.initWagerTypes = functions.https.onCall(async (data, context) => {
     }
 });
 
-const keepLeaderboardUpdated = functions.pubsub.schedule('every 15 minutes').onRun(async (context) => {
+exports.keepLeaderboardUpdated = functions.pubsub.schedule('every 15 minutes').onRun(async (context) => {
     const groupsSnapshot = await db.collection('groups').get()
     await Promise.allSettled(groupsSnapshot.docs.map(doc => doc.id)
         .map(updateLeaderboardForGroup))
