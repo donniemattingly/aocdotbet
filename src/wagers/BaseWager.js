@@ -76,23 +76,36 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
     const [byDate, setByDate] = useState(true)
     const [headToHead, setHeadToHead] = useState(false)
 
-    const {register, handleSubmit, errors} = useForm();
+    const {register, handleSubmit, errors, formState} = useForm();
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
 
+    const getFormErrorMessage = (errors) => {
+        const messages = {
+            actor: "Must select all members of the bet",
+            betAmount: "Must select a bet amount",
+            completedBy: "Must provide a date",
+            hoursToCompletion: "Must provide a number of hours for star completion",
+            numStars: "Must provide a nubmer of stars",
+            wagerDirection: "Must pick will or won't"
+        }
+
+        return messages[Object.keys(errors)[0]]
+    }
+
     const starType = secondStars ? ' second' : '';
     const timeConstraint = completionTime ?
-        <span> at least <WagerInput ref={register} name='hoursToCompletion' type='number'/> hour(s) after they were released </span> : ''
+        <span> at least <WagerInput ref={register({required: !!completionTime})} name='hoursToCompletion' type='number'/> hour(s) after they were released </span> : ''
     const dateConstraint = byDate ?
-        <span> by <WagerInput ref={register} name='completedBy' type='date' defaultValue='2021-01-01'/> </span> : '';
+        <span> by <WagerInput ref={register({required:!!byDate})} name='completedBy' type='date' defaultValue='2021-01-01'/> </span> : '';
     const wagerDirection = <span>
-        that <WagerMemberSelection name="actor" register={register} subject={true} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/>
-        {' '} <WagerDirectionSelect register={register}/> {' '}
+        that <WagerMemberSelection name="actor" register={register({required: true})} subject={true} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/>
+        {' '} <WagerDirectionSelect register={register({required: true})}/> {' '}
     </span>;
     const headToHeadClause = headToHead ? <span> than <WagerMemberSelection name="opponent" register={register} subject={false} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/> </span> : ''
     const victoryCondition = headToHead ? 'earn more' :
-        <span> earn <WagerInput ref={register} name='numStars' type='number'/> </span>
+        <span> earn <WagerInput ref={register({required: !headToHead})} name='numStars' type='number'/> </span>
     const onSubmit = async data => {
         setSubmitting(true);
         setErrorMessage(null);
@@ -155,7 +168,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <span>
-                     Bet $<WagerInput ref={register} type='number' name='betAmount' min={0}/> {wagerDirection}
+                     Bet $<WagerInput ref={register({required: true})} type='number' name='betAmount' min={0}/> {wagerDirection}
                     {victoryCondition} {starType} stars {timeConstraint} {dateConstraint} {headToHeadClause}
                 </span>
                 <br/>
@@ -163,7 +176,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                 {(!submitting && !success) && <AocSubmit value='[Propose]'/>}
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
             </form>
-
+            <p>{!formState?.isValid && <ErrorMessage>{getFormErrorMessage(errors)}</ErrorMessage>}</p>
             <p>{errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}</p>
             <p>{success && ('Wager was proposed!')}</p>
         </div>
