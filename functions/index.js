@@ -210,7 +210,7 @@ exports.createWager = functions.https.onCall(async (data, context) => {
         },
         opponent: details.opponent ? {
             uid: details.opponent,
-            name: opponentUserSnapshot?.data().name,
+            name: opponentUserSnapshot.data().name,
         } : null,
         status: 'pending',
         details: details
