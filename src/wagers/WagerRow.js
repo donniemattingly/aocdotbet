@@ -67,7 +67,7 @@ export const getWagerDescription = (wager, auth) => {
     const starsMetric = wager.opponent ? headToHeadStarsMetric : numStars;
     const opponentClause = wager.opponent ? `than ${names['opponent']}` : '';
 
-    const wagerDetails = `${names['actor']} ${willOrWont} earn ${starsMetric} ${starType} stars ${timeConstraint} ${dateConstraint} ${opponentClause}`
+    const wagerDetails = `${names['actor']} ${willOrWont} earn at least ${starsMetric} ${starType} stars ${timeConstraint} ${dateConstraint} ${opponentClause}`
     return `${amountAndParties} that ${wagerDetails}`
 }
 
