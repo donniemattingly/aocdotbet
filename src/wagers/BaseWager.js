@@ -6,12 +6,13 @@
  */
 
 import React, {useState} from "react";
-import {AocRadio} from "../shared-components";
+import {AocRadio, FinePrintItem, Smaller} from "../shared-components";
 import styled from "styled-components";
 import {useForm} from "react-hook-form";
 import firebase from "firebase";
 import {AocSubmit, ErrorMessage} from "../groups/JoinGroup";
 import {UnicodeSpinner} from "../UnicodeSpinner";
+import {FinePrint} from "../FinePrint";
 
 const getWagerText = (starsTotal, secondStars, completionTime) => {
     const starType = secondStars ? ' second' : '';
@@ -179,6 +180,9 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
             <p>{!formState?.isValid && <ErrorMessage>{getFormErrorMessage(errors)}</ErrorMessage>}</p>
             <p>{errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}</p>
             <p>{success && ('Wager was proposed!')}</p>
+            <br/>
+            <br/>
+            <FinePrint/>
         </div>
     )
 }

@@ -60,6 +60,10 @@ export const Smaller = styled.span`
   opacity: 0.5
 `
 
+export const FinePrintItem = styled.li`
+  opacity: 0.5;
+`
+
 export const AocRadio = ({label, onClick, value, ...props}) => {
     return (
         <AocRadioSpan onClick={onClick}> [{value ? 'X' : ' '}] {props.children}</AocRadioSpan>

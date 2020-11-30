@@ -1,11 +1,12 @@
 import {useParams} from "react-router-dom";
 import {UnicodeSpinner} from "../UnicodeSpinner";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useStoreState} from "easy-peasy";
 import {getWagerDescription} from "./WagerRow";
 import firebase from "firebase";
 import {AocButton} from "../shared-components";
 import {ErrorMessage} from "../groups/JoinGroup";
+import {FinePrint} from "../FinePrint";
 
 const getWager = async (groupId, wagerId) => {
     const doc = await firebase.firestore()
@@ -81,6 +82,9 @@ export const ManageWager = ({...props}) => {
                 {status.success && 'You responded to the wager!'}
                 {status.error && <ErrorMessage> {status.message} </ErrorMessage>}
             </div>
+            <br/>
+            <br/>
+            <FinePrint/>
         </div>
     )
 }
