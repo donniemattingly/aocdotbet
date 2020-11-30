@@ -84,7 +84,6 @@ export const ManageWager = ({...props}) => {
                 {(proposedByMe && wager.status === 'pending' && !submitting && !status.success) &&
                 <span>
                     <AocButton onClick={() => respondToWager(false)}> [Rescind this Wager] </AocButton>
-                    {/*<AocButton onClick={() => respondToWager(false, true)}> [Counter this Wager] </AocButton>*/}
                 </span>
                 }
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}

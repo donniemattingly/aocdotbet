@@ -255,13 +255,15 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
     }
 
     const wager = doc.data();
-
+    let action = '';
     if (wager.proposedTo.uid !== context.auth.uid) {
         if (!accept && (wager.proposedBy.uid === context.auth.uid)){
-
+            action = 'rescinded';
         } else {
             throw new functions.https.HttpsError('failed-precondition', 'This user may not accept the wager');
         }
+    } else {
+        action = accept ? 'accepted' : 'rejected'
     }
 
     const newWager = {
@@ -287,7 +289,7 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
         .doc(wager.proposedBy.uid)
         .update({[path]: newWager})
 
-    await notifyGroupOfWager(wager, accept ? 'accepted' : 'rejected');
+    await notifyGroupOfWager(wager, action);
 });
 
 exports.initWagerTypes = functions.https.onCall(async (data, context) => {
@@ -345,6 +347,8 @@ const getTitle = (wager, action) => {
         return `${names['proposedTo']} accepted a $${wager.details.bet} bet from ${names['proposedBy']} `
     } else if(action === 'rejected'){
         return `${names['proposedTo']} rejected a $${wager.details.bet} bet from ${names['proposedBy']} `
+    } else if(action === 'rescinded'){
+        return `${names['proposedBy']} rescinded a $${wager.details.bet} bet to ${names['proposedTo']} `
     } else {
         return 'New Wager'
     }
