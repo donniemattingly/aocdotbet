@@ -32,6 +32,7 @@ export const ManageWager = ({...props}) => {
     const [wager, setWager] = useState({})
     const auth = useStoreState(state => state.auth);
     const proposedByMe = wager?.proposedBy?.uid === auth?.id;
+    const proposedToMe = wager?.proposedTo?.uid === auth?.id;
 
     const respondToWager = async (accept) => {
         setSubmitting(true);
@@ -72,10 +73,17 @@ export const ManageWager = ({...props}) => {
             </div>
             <br/>
             <div>
-                {(!proposedByMe && wager.status === 'pending' && !submitting && !status.success) &&
+                {(proposedToMe && wager.status === 'pending' && !submitting && !status.success) &&
                 <span>
                     <AocButton onClick={() => respondToWager(true)}> [Confirm this Wager] </AocButton>
                     <AocButton onClick={() => respondToWager(false)}> [Reject this Wager] </AocButton>
+                    {/*<AocButton onClick={() => respondToWager(false, true)}> [Counter this Wager] </AocButton>*/}
+                </span>
+                }
+
+                {(proposedByMe && wager.status === 'pending' && !submitting && !status.success) &&
+                <span>
+                    <AocButton onClick={() => respondToWager(false)}> [Rescind this Wager] </AocButton>
                     {/*<AocButton onClick={() => respondToWager(false, true)}> [Counter this Wager] </AocButton>*/}
                 </span>
                 }
