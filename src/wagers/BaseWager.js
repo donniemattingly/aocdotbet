@@ -76,6 +76,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
     const [completionTime, setCompletionTime] = useState(false);
     const [byDate, setByDate] = useState(true)
     const [headToHead, setHeadToHead] = useState(false)
+    const [spread, setSpread] = useState(false)
 
     const {register, handleSubmit, errors, formState} = useForm();
     const [submitting, setSubmitting] = useState(false);
@@ -105,7 +106,8 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
         {' '} <WagerDirectionSelect register={register({required: true})}/> {' '}
     </span>;
     const headToHeadClause = headToHead ? <span> than <WagerMemberSelection name="opponent" register={register} subject={false} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/> </span> : ''
-    const victoryCondition = headToHead ? 'earn more' :
+    const headToHeadVictoryCondition = spread ? <span> earn <WagerInput ref={register({required: spread})} name='spread' type='number'/> more </span> : 'earn more';
+    const victoryCondition = headToHead ? headToHeadVictoryCondition :
         <span> earn <WagerInput ref={register({required: !headToHead})} name='numStars' type='number'/> </span>
     const onSubmit = async data => {
         setSubmitting(true);
@@ -125,6 +127,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                     hoursToCompletion: data.hoursToCompletion,
                     completedBy: data.completedBy,
                     direction: data.wagerDirection,
+                    spread: data.spread
                 }
             }
             await firebase.functions().httpsCallable('createWager')(wager)
@@ -157,12 +160,12 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                 }}>
                     by a certain date
                 </AocRadio>
-                {/*<AocRadio value={!!aboutMe} onClick={aboutMeClicked}>*/}
-                {/*    about me*/}
-                {/*</AocRadio>*/}
                 <AocRadio value={!!headToHead} onClick={headToHeadClicked}>
                     head to head
                 </AocRadio>
+                {headToHead && <AocRadio value={!!spread} onClick={() => setSpread(!spread)}>
+                    uneven odds
+                </AocRadio>}
             </WagerOptionsContainer>
             <br/>
             <div>

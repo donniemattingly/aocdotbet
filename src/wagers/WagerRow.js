@@ -54,7 +54,7 @@ const namesFromUids = (auth, wager) => {
 }
 
 export const getWagerDescription = (wager, auth) => {
-    const {bet, numStars, secondStars, hoursToCompletion, completedBy, direction} = wager.details;
+    const {bet, numStars, secondStars, hoursToCompletion, completedBy, direction, spread} = wager.details;
     const names = namesFromUids(auth, wager)
 
     const amountAndParties = `${names['proposedBy']} bet ${names['proposedTo']} $${bet}`
@@ -63,7 +63,8 @@ export const getWagerDescription = (wager, auth) => {
     const willOrWont = direction === 'over' ? 'will' : `won't`
     const timeConstraint = hoursToCompletion ? `at least ${hoursToCompletion} hour(s) after they were released` : ''
     const dateConstraint = completedBy ? `by ${completedBy}` : '';
-    const starsMetric = wager.opponent ? 'more' : numStars;
+    const headToHeadStarsMetric = spread ? `${spread} more` : 'more'
+    const starsMetric = wager.opponent ? headToHeadStarsMetric : numStars;
     const opponentClause = wager.opponent ? `than ${names['opponent']}` : '';
 
     const wagerDetails = `${names['actor']} ${willOrWont} earn ${starsMetric} ${starType} stars ${timeConstraint} ${dateConstraint} ${opponentClause}`
