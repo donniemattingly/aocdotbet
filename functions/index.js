@@ -257,7 +257,11 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
     const wager = doc.data();
 
     if (wager.proposedTo.uid !== context.auth.uid) {
-        throw new functions.https.HttpsError('failed-precondition', 'This user may not accept the wager');
+        if (!accept && (wager.proposedBy.uid === context.auth.uid)){
+
+        } else {
+            throw new functions.https.HttpsError('failed-precondition', 'This user may not accept the wager');
+        }
     }
 
     const newWager = {
