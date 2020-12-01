@@ -51,7 +51,7 @@ const AocSelect = styled.select`
 `
 const idToObjectMapToArray = (obj) => Object.keys(obj).map(key => ({id: key, ...obj[key]}));
 
-const WagerMemberSelection = ({leaderboard, uid, opponentUid, subject = true, register, name}) => {
+const WagerMemberSelection = ({leaderboard, uid, subject = true, register, name}) => {
     const getAllowedSelections = () => {
         return idToObjectMapToArray(leaderboard?.members ?? {}).filter(member => member.uid)
     }
@@ -72,7 +72,7 @@ const WagerDirectionSelect = ({register}) => {
     )
 }
 
-export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
+export const BaseWager = ({opponentUid, myUid, groupId, group, isOpenWager}) => {
     const counterWager = useStoreState(state => state.counterWager);
     const setCounterWager = useStoreActions(actions => actions.setCounterWager)
 
@@ -132,10 +132,10 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
     const dateConstraint = byDate ?
         <span> by <WagerInput ref={register({required:!!byDate})} name='completedBy' type='date' defaultValue='2021-01-10'/> </span> : '';
     const wagerDirection = <span>
-        that <WagerMemberSelection name="actor" register={register({required: true})} subject={true} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/>
+        that <WagerMemberSelection name="actor" register={register({required: true})} subject={true} uid={myUid} leaderboard={group.leaderboard}/>
         {' '} <WagerDirectionSelect register={register({required: true})}/> {' '}
     </span>;
-    const headToHeadClause = headToHead ? <span> than <WagerMemberSelection name="opponent" register={register} subject={false} uid={myUid} opponentUid={opponentUid} leaderboard={group.leaderboard}/> </span> : ''
+    const headToHeadClause = headToHead ? <span> than <WagerMemberSelection name="opponent" register={register} subject={false} uid={myUid} leaderboard={group.leaderboard}/> </span> : ''
     const headToHeadVictoryCondition = spread ? <span> earn <WagerInput ref={register({required: spread})} name='spread' type='number'/> more </span> : 'earn more';
     const victoryCondition = headToHead ? headToHeadVictoryCondition :
         <span> earn <WagerInput ref={register({required: !headToHead})} name='numStars' type='number'/> </span>
@@ -149,6 +149,7 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                 proposedBy: myUid,
                 groupId: groupId,
                 details: {
+                    isOpen: isOpenWager,
                     actor: data.actor,
                     opponent: data.opponent,
                     bet: data.betAmount,
@@ -160,7 +161,11 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                     spread: data.spread
                 }
             }
-            await firebase.functions().httpsCallable('createWager')(wager)
+            if(isOpenWager){
+                await firebase.functions().httpsCallable('createOpenWager')(wager)
+            } else {
+                await firebase.functions().httpsCallable('createWager')(wager)
+            }
             setSuccess(true);
         } catch (error) {
             setErrorMessage(error.message);
@@ -190,9 +195,9 @@ export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
                 }}>
                     by a certain date
                 </AocRadio>
-                <AocRadio value={!!headToHead} onClick={headToHeadClicked}>
+                {!isOpenWager && <AocRadio value={!!headToHead} onClick={headToHeadClicked}>
                     head to head
-                </AocRadio>
+                </AocRadio>}
                 {headToHead && <AocRadio value={!!spread} onClick={() => setSpread(!spread)}>
                     uneven odds
                 </AocRadio>}

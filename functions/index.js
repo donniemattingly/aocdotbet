@@ -244,6 +244,58 @@ exports.createWager = functions.https.onCall(async (data, context) => {
     await notifyGroupOfWager(wagerRef, 'proposed');
 })
 
+exports.createOpenWager = functions.https.onCall(async (data, context) => {
+    const {groupId, proposedTo, proposedBy, details} = data;
+    const membersSnapshot = await db.collection(`groups/${groupId}/members`).doc(proposedBy).get();
+    if (!membersSnapshot.exists) {
+        throw new functions.https.HttpsError('unauthenticated', 'You must be a member of the group to create wagers in it.')
+    }
+
+    const creatingUserSnapshot = await db.collection('users').doc(proposedBy).get();
+    if (!creatingUserSnapshot.exists) {
+        throw new functions.https.HttpsError('failed-precondition', 'The other party of the wager isn\'t registered');
+    }
+
+    const actorUserSnapshot = await db.collection('users').doc(details.actor).get();
+    if (!actorUserSnapshot.exists) {
+        throw new functions.https.HttpsError('failed-precondition', 'The actor of the wager isn\'t registered');
+    }
+
+
+    const wagerToSave = {
+        id: uuidv4(),
+        proposedBy: {
+            uid: proposedBy,
+            name: creatingUserSnapshot.data().name
+        },
+        actor: {
+            uid: details.actor,
+            name: actorUserSnapshot.data().name,
+        },
+        status: 'open',
+        details: details
+    }
+
+    const wagerRef = {
+        groupId: groupId,
+        ...wagerToSave
+    }
+
+    await db.collection('groups')
+        .doc(groupId)
+        .collection('wagers')
+        .doc(wagerToSave.id)
+        .set(wagerToSave);
+
+    const path = `wagers.${wagerToSave.id}`
+
+    await db.collection('users')
+        .doc(proposedBy)
+        .update({[path]: wagerRef})
+
+    await notifyGroupOfWager(wagerRef, 'open');
+})
+
 exports.confirmWager = functions.https.onCall(async (data, context) => {
     console.log(`AUDIT: action by ${context.auth.uid}`);
     const {groupId, wagerId, accept} = data;
@@ -254,8 +306,18 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
     if (!doc.exists) {
         throw new functions.https.HttpsError('failed-precondition', 'This wager doesn\'t exist');
     }
-
     const wager = doc.data();
+
+    if(wager.status === 'open'){
+        const snapshot = await db.collection('users').doc(context.auth.uid).get()
+        const proposedToUser = snapshot.data();
+        wager.proposedTo = {
+            uid: context.auth.uid,
+            name: proposedToUser.name
+        }
+    }
+
+
     let action = '';
     if (wager.proposedTo.uid !== context.auth.uid) {
         if (!accept && (wager.proposedBy.uid === context.auth.uid)){
@@ -318,9 +380,9 @@ exports.keepLeaderboardUpdated = functions.pubsub.schedule('every 15 minutes').o
 const namesFromUids = (auth, wager) => {
     const getName = (key) => {
         if ((wager[key] && wager[key].uid) === (auth && auth.id)) {
-            return ['actor', 'proposedBy'].includes(key) ? 'I' : 'Me'
+            return ['actor', 'proposedBy'].includes(key) ? 'I' : 'Me';
         } else {
-            return (wager[key] && wager[key].name);
+            return (wager[key] && wager[key].name) || '';
         }
     }
 
@@ -350,6 +412,8 @@ const getTitle = (wager, action) => {
         return `${names['proposedTo']} rejected a $${wager.details.bet} bet from ${names['proposedBy']} `
     } else if(action === 'rescinded'){
         return `${names['proposedBy']} rescinded a $${wager.details.bet} bet to ${names['proposedTo']} `
+    } else if(action === 'open'){
+        return `${names['proposedBy']} proposed an open wager `
     } else {
         return 'New Wager'
     }

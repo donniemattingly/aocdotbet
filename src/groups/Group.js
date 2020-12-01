@@ -94,8 +94,19 @@ export const Group = ({...props}) => {
 
     const members = Object.values(group.leaderboard.members);
     members.sort((a, b) => b.local_score - a.local_score)
+
+    const openWagers = wagers.filter(wager => ['open'].includes(wager.status));
     return (
         <div>
+            <p>
+                --- Open Wagers --- <AocLink to={`/groups/${groupId}/wagers/open`}>[Create an Open Wager]</AocLink>
+            </p>
+            {openWagers.length > 0 && <p>
+                Here are the open wagers for this group
+            </p>}
+            <div>
+                {openWagers.map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
+            </div>
             <p>
                 --- Leaderboard ---
             </p>
@@ -117,7 +128,7 @@ export const Group = ({...props}) => {
                 Here are the pending and booked wagers for this group
             </p>
             <div>
-                {wagers.filter(wager => wager.status !== 'rejected').map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
+                {wagers.filter(wager => ['booked', 'pending'].includes(wager.status)).map(wager => <WagerRow wager={wager} auth={null} linkToWager={false}/>)}
             </div>
         </div>
     )

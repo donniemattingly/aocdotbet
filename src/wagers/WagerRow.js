@@ -57,7 +57,7 @@ export const getWagerDescription = (wager, auth) => {
     const {bet, numStars, secondStars, hoursToCompletion, completedBy, direction, spread} = wager.details;
     const names = namesFromUids(auth, wager)
 
-    const amountAndParties = `${names['proposedBy']} bet ${names['proposedTo']} $${bet}`
+    const amountAndParties = wager.status === 'open' ? `${names['proposedBy']} proposed a bet of $${bet}` : `${names['proposedBy']} bet ${names['proposedTo']} $${bet}`
 
     const starType = secondStars ? ' second' : '';
     const willOrWont = direction === 'over' ? 'will' : `won't`

@@ -68,12 +68,12 @@ export const ManageWager = ({...props}) => {
 
     return (
         <div>
-            <div>
+            {['pending', 'booked'].includes(wager.status) && <div>
                 <span>
                     {wager.status === 'pending' ? 'Pending: ' : 'Booked: '}
                 </span>
                 {getWagerDescription(wager, auth)}
-            </div>
+            </div>}
             <br/>
             <div>
                 {(proposedToMe && wager.status === 'pending' && !submitting && !status.success) &&
@@ -88,6 +88,15 @@ export const ManageWager = ({...props}) => {
                 <span>
                     <AocButton onClick={() => respondToWager(false)}> [Rescind this Wager] </AocButton>
                 </span>
+                }
+
+                {(wager.status === 'open') &&
+                <div>
+                    {getWagerDescription(wager, auth)}
+                    <span>
+                    <AocButton onClick={() => respondToWager(true)}> [Accept this Wager] </AocButton>
+                </span>
+                </div>
                 }
                 {submitting && <UnicodeSpinner spinner='boxBounce2'/>}
                 {status.success && 'You responded to the wager!'}
