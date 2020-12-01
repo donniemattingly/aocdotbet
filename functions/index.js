@@ -200,6 +200,7 @@ exports.createWager = functions.https.onCall(async (data, context) => {
 
     const wagerToSave = {
         id: uuidv4(),
+        groupId: groupId,
         proposedBy: {
             uid: proposedBy,
             name: creatingUserSnapshot.data().name
@@ -264,6 +265,7 @@ exports.createOpenWager = functions.https.onCall(async (data, context) => {
 
     const wagerToSave = {
         id: uuidv4(),
+        groupId: groupId,
         proposedBy: {
             uid: proposedBy,
             name: creatingUserSnapshot.data().name

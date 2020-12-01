@@ -1,6 +1,7 @@
 import React from "react";
 import {AocLink} from "../shared-components";
 import styled from 'styled-components';
+import {useParams} from "react-router-dom";
 
 /*
     Wagers are between bettors and about one or more actors
@@ -76,10 +77,14 @@ const WagerRowContainer = styled.div`
 `
 
 export const WagerRow = ({wager, auth, linkToWager}) => {
+    console.log(wager);
     return (
         <WagerRowContainer>
             {(wager.status === 'pending' && linkToWager) && <span>
                 <AocLink to={`/groups/${wager.groupId}/wagers/${wager.id}`}>Pending:</AocLink>
+            </span>}
+            {(wager.status === 'open') && <span>
+                <AocLink to={`/groups/${wager.groupId}/wagers/${wager.id}`}>Open:</AocLink>
             </span>}
             {(wager.status === 'pending' && !linkToWager) && 'Pending: '}
             {wager.status === 'booked' && 'Booked: '}
