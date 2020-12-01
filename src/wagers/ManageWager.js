@@ -90,11 +90,20 @@ export const ManageWager = ({...props}) => {
                 </span>
                 }
 
-                {(wager.status === 'open') &&
+                {(wager.status === 'open' && !proposedByMe) &&
                 <div>
                     {getWagerDescription(wager, auth)}
                     <span>
                     <AocButton onClick={() => respondToWager(true)}> [Accept this Wager] </AocButton>
+                </span>
+                </div>
+                }
+
+                {(wager.status === 'open' && proposedByMe) &&
+                <div>
+                    {getWagerDescription(wager, auth)}
+                    <span>
+                    <AocButton onClick={() => respondToWager(false)}> [Rescind this Wager] </AocButton>
                 </span>
                 </div>
                 }
