@@ -245,6 +245,7 @@ exports.createWager = functions.https.onCall(async (data, context) => {
 })
 
 exports.confirmWager = functions.https.onCall(async (data, context) => {
+    console.log(`AUDIT: action by ${context.auth.uid}`);
     const {groupId, wagerId, accept} = data;
 
     const doc = await db.collection('groups').doc(groupId)
