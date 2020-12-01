@@ -1,7 +1,7 @@
-import {useParams} from "react-router-dom";
+import {useParams, useHistory} from "react-router-dom";
 import {UnicodeSpinner} from "../UnicodeSpinner";
 import React, {useEffect, useState} from "react";
-import {useStoreState} from "easy-peasy";
+import {useStoreActions, useStoreState} from "easy-peasy";
 import {getWagerDescription} from "./WagerRow";
 import firebase from "firebase";
 import {AocButton} from "../shared-components";
@@ -31,10 +31,13 @@ export const ManageWager = ({...props}) => {
     const [status, setStatus] = useState({});
     const [wager, setWager] = useState({})
     const auth = useStoreState(state => state.auth);
+    const setCounterWager = useStoreActions(actions => actions.setCounterWager)
+    const history = useHistory();
     const proposedByMe = wager?.proposedBy?.uid === auth?.id;
     const proposedToMe = wager?.proposedTo?.uid === auth?.id;
 
-    const respondToWager = async (accept) => {
+    const respondToWager = async (accept, options = {}) => {
+        const {counter} = options;
         setSubmitting(true);
         try {
             await submitResponseToWager(groupId, wagerId, accept);
@@ -77,7 +80,7 @@ export const ManageWager = ({...props}) => {
                 <span>
                     <AocButton onClick={() => respondToWager(true)}> [Confirm this Wager] </AocButton>
                     <AocButton onClick={() => respondToWager(false)}> [Reject this Wager] </AocButton>
-                    {/*<AocButton onClick={() => respondToWager(false, true)}> [Counter this Wager] </AocButton>*/}
+                    <AocButton onClick={() => respondToWager(false, {counter: true})}> [Counter this Wager] </AocButton>
                 </span>
                 }
 

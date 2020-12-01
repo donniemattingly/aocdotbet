@@ -5,7 +5,7 @@
         - over / under second star total
  */
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {AocRadio, FinePrintItem, Smaller} from "../shared-components";
 import styled from "styled-components";
 import {useForm} from "react-hook-form";
@@ -13,6 +13,7 @@ import firebase from "firebase";
 import {AocSubmit, ErrorMessage} from "../groups/JoinGroup";
 import {UnicodeSpinner} from "../UnicodeSpinner";
 import {FinePrint} from "../FinePrint";
+import {useStoreActions, useStoreState} from "easy-peasy";
 
 const getWagerText = (starsTotal, secondStars, completionTime) => {
     const starType = secondStars ? ' second' : '';
@@ -72,16 +73,45 @@ const WagerDirectionSelect = ({register}) => {
 }
 
 export const BaseWager = ({opponentUid, myUid, groupId, group}) => {
+    const counterWager = useStoreState(state => state.counterWager);
+    const setCounterWager = useStoreActions(actions => actions.setCounterWager)
+
+    const defaultValues = {
+        hoursToCompletion: counterWager?.details?.hoursToCompletion,
+        completedBy: counterWager?.details?.completedBy,
+        betAmount: counterWager?.details?.bet,
+        actor: counterWager?.details?.actor,
+        opponent: counterWager?.details?.opponent,
+        wagerDirection: counterWager?.details?.direction,
+        numStars: counterWager?.details?.numStars,
+        spread: counterWager?.details?.spread,
+    }
+
+    const {register, handleSubmit, errors, formState} = useForm({
+        defaultValues
+    });
+
     const [secondStars, setSecondStars] = useState(false);
     const [completionTime, setCompletionTime] = useState(false);
     const [byDate, setByDate] = useState(true)
     const [headToHead, setHeadToHead] = useState(false)
-    const [spread, setSpread] = useState(false)
 
-    const {register, handleSubmit, errors, formState} = useForm();
+    const [spread, setSpread] = useState(false)
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
+
+    useEffect(() => {
+        if(counterWager && counterWager.details){
+            const details = counterWager.details;
+            setSecondStars(details.secondStars);
+            setCompletionTime(!!details.hoursToCompletion)
+            setByDate(!!details.completedBy);
+            setHeadToHead(!!details.opponent);
+            setSpread(!!details.spread);
+            setCounterWager(null);
+        }
+    }, [counterWager]);
 
     const getFormErrorMessage = (errors) => {
         const messages = {

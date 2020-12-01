@@ -19,6 +19,10 @@ export const store = createStore(persist({
             state.auth = {loggedIn: false}
         }
     }),
+    counterWager: null,
+    setCounterWager: action((state, wager) => {
+        state.counterWager = wager;
+    }),
     user: {},
     setUser: action((state, user) => {
         state.user = user
