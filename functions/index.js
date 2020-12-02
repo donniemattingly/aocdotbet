@@ -312,7 +312,7 @@ exports.confirmWager = functions.https.onCall(async (data, context) => {
 
     if(wager.status === 'open'){
 
-        if(wager.proposedBy.uid === context.auth.uid){
+        if(wager.proposedBy.uid === context.auth.uid && accept){
             throw new functions.https.HttpsError('failed-precondition', `Can't accept an open wager you created yourself`)
         }
         const snapshot = await db.collection('users').doc(context.auth.uid).get()

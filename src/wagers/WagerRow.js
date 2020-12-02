@@ -60,7 +60,7 @@ export const getWagerDescription = (wager, auth) => {
 
     const amountAndParties = wager.status === 'open' ? `${names['proposedBy']} proposed a bet of $${bet}` : `${names['proposedBy']} bet ${names['proposedTo']} $${bet}`
 
-    const starType = secondStars ? ' second' : '';
+    const starType = secondStars ? ' second of the day' : '';
     const willOrWont = direction === 'over' ? 'will' : `won't`
     const timeConstraint = hoursToCompletion ? `at least ${hoursToCompletion} hour(s) after they were released` : ''
     const dateConstraint = completedBy ? `by ${completedBy}` : '';
