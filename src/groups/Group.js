@@ -115,6 +115,14 @@ export const Group = ({...props}) => {
                 wagers with them.
             </p>
 
+            <p>
+                All the names in green have joined already. You can click on them to make a wager.
+            </p>
+
+            <p>
+                If you want to invite someone, give them the link https://aoc.bet/groups/join/{group.joinCode}
+            </p>
+
             <MemberRowsContainer>
                 <tbody>
                 {members.map((member, idx) => <GroupMember rank={idx} member={member}/>)}
